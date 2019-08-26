@@ -1,28 +1,31 @@
 package main
 
 import (
-	"flag"
+	"encoding/base64"
 	"fmt"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
+	kubeRestclient "k8s.io/client-go/rest"
+	"log"
 	"os"
-	"path/filepath"
 )
 
 func main() {
-	var kubeconfig *string
-	if home := homeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-	}
-	flag.Parse()
+	var config = new(kubeRestclient.Config)
+	var err error
 
-	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	config.Host = os.Getenv("KUBERNETES_SERVER")
+	config.TLSClientConfig.CAData, err = base64.URLEncoding.DecodeString(os.Getenv("KUBERNETES_CERT_DATA"))
 	if err != nil {
-		panic(err.Error())
+		log.Fatal("error decoding CA Data: " + err.Error())
+	}
+	config.TLSClientConfig.CertData, err = base64.URLEncoding.DecodeString(os.Getenv("CLIENT_CERT_DATA"))
+	if err != nil {
+		log.Fatal("error decoding Cert Data: " + err.Error())
+	}
+	config.TLSClientConfig.KeyData, err = base64.URLEncoding.DecodeString(os.Getenv("CLIENT_KEY_DATA"))
+	if err != nil {
+		log.Fatal("error decoding Key Data: " + err.Error())
 	}
 
 	// create the client set
@@ -30,6 +33,7 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+
 	for {
 		pods, err := clientset.CoreV1().Pods("dev").List(v1.ListOptions{})
 		if err != nil {
