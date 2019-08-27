@@ -78,7 +78,9 @@ func getDeploymentTag() (string, error) {
 	}
 
 	// try and open repository at given path
-	repository, err := git.PlainOpen(repoPath)
+	repository, err := git.PlainOpenWithOptions(repoPath, &git.PlainOpenOptions{
+		DetectDotGit: true,
+	})
 	if err != nil {
 		return "", errors.New("unable to open repository: " + err.Error())
 	}
