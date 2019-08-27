@@ -14,16 +14,16 @@ func main() {
 	var config = new(kubeRestclient.Config)
 	var err error
 
-	config.Host = os.Getenv("KUBERNETES_SERVER")
-	config.TLSClientConfig.CAData, err = base64.URLEncoding.DecodeString(os.Getenv("KUBERNETES_CERT_DATA"))
+	config.Host = os.Getenv("PLUGIN_KUBERNETES_SERVER")
+	config.TLSClientConfig.CAData, err = base64.URLEncoding.DecodeString(os.Getenv("PLUGIN_KUBERNETES_CERT_DATA"))
 	if err != nil {
 		log.Fatal("error decoding CA Data: " + err.Error())
 	}
-	config.TLSClientConfig.CertData, err = base64.URLEncoding.DecodeString(os.Getenv("CLIENT_CERT_DATA"))
+	config.TLSClientConfig.CertData, err = base64.URLEncoding.DecodeString(os.Getenv("PLUGIN_CLIENT_CERT_DATA"))
 	if err != nil {
 		log.Fatal("error decoding Cert Data: " + err.Error())
 	}
-	config.TLSClientConfig.KeyData, err = base64.URLEncoding.DecodeString(os.Getenv("CLIENT_KEY_DATA"))
+	config.TLSClientConfig.KeyData, err = base64.URLEncoding.DecodeString(os.Getenv("PLUGIN_CLIENT_KEY_DATA"))
 	if err != nil {
 		log.Fatal("error decoding Key Data: " + err.Error())
 	}
