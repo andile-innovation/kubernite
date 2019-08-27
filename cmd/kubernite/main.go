@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gopkg.in/src-d/go-git.v4"
 	"io"
+	"io/ioutil"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	kubeRestclient "k8s.io/client-go/rest"
@@ -67,7 +68,16 @@ func getDeploymentTag() (string, error) {
 		return "", errors.New(fmt.Sprintf("'%s' is not a directory", repositoryPath))
 	}
 
-	// try and repository at given path
+	files, err := ioutil.ReadDir(repositoryPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, f := range files {
+		fmt.Println(f.Name())
+	}
+
+	// try and open repository at given path
 	repository, err := git.PlainOpen(repoPath)
 	if err != nil {
 		return "", errors.New("unable to open repository: " + err.Error())
