@@ -25,7 +25,6 @@ ENV CGO_ENABLED=0
 ENV GOOS=linux
 ENV GOARCH=amd64
 RUN go build -a -tags netgo -ldflags '-w -extldflags "-static"' -o kubernite ./cmd/kubernite/main.go
-RUN ["sh", "-c", "ls -la"]
 
 # this last stage produces the final build image
 # start from a fresh Alpine image to reduce the image size
@@ -36,6 +35,6 @@ FROM alpine AS kubernite
 RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 
 # Finally we copy the statically compiled Go binary.
-COPY --from=kubernite_builder /kubernite /kubernite
+COPY --from=kubernite_builder /kubernite/kubernite /kubernite
 
-CMD ["sh", "-c", "ls -la"]
+ENTRYPOINT ["/kubernite"]
