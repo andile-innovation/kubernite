@@ -34,6 +34,9 @@ FROM alpine AS kubernite
 # add the certificates for TLS
 RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 
+# add git
+RUN apk add --no-cache git openssh curl perl
+
 # Finally we copy the statically compiled Go binary.
 COPY --from=kubernite_builder /kubernite/kubernite /kubernite
 
