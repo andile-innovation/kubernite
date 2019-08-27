@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"gopkg.in/src-d/go-git.v4"
 	"io"
@@ -18,39 +19,9 @@ func main() {
 	var config = new(kubeRestclient.Config)
 	var err error
 
-	r, err := git.PlainOpen(repoPath)
+	deploymentTag, err := getDeploymentTag()
 	if err != nil {
-		log.Fatal("error opening git repo: " + err.Error())
-	}
-
-	deploymentTag := ""
-
-	tagReferences, err := r.Tags()
-	if err != nil {
-		log.Fatal("error getting repo tag refs: " + err.Error())
-	}
-
-	if tagReferences != nil {
-		latestTag, err := tagReferences.Next()
-		switch err {
-		case io.EOF:
-		case nil:
-			deploymentTag = latestTag.Name().Short()
-		default:
-			log.Fatal("error getting latest tag ref: " + err.Error())
-		}
-	}
-
-	if deploymentTag == "" {
-		commitReferences, err := r.CommitObjects()
-		if err != nil {
-			log.Fatal("error getting repo commits: " + err.Error())
-		}
-		commit, err := commitReferences.Next()
-		if err != nil {
-			log.Fatal("error getting latest commit: " + err.Error())
-		}
-		deploymentTag = commit.Hash.String()
+		log.Fatal("error getting deployment tag: " + err.Error())
 	}
 
 	fmt.Println("use: " + deploymentTag)
@@ -74,4 +45,59 @@ func main() {
 		fmt.Printf("There are %d pods in the cluster!\n", len(pods.Items))
 		break
 	}
+}
+
+func getDeploymentTag() (string, error) {
+
+	// check if a tag has been provided as a plugin option
+	if os.Getenv("PLUGIN_DEPLOYMENT_TAG") != "" {
+		return os.Getenv("PLUGIN_DEPLOYMENT_TAG"), nil
+	}
+
+	// confirm that given repository path is valid
+	repositoryPath := os.Getenv("PLUGIN_DEPLOYMENT_TAG_REPOSITORY_PATH")
+	if repositoryPath == "" {
+		return "", errors.New("deployment tag repository path is blank")
+	}
+	fi, err := os.Stat(repositoryPath)
+	if err != nil {
+		return "", errors.New("unable to validate given deployment tag repository path: " + err.Error())
+	}
+	if !fi.IsDir() {
+		return "", errors.New(fmt.Sprintf("'%s' is not a directory", repositoryPath))
+	}
+
+	// try and repository at given path
+	repository, err := git.PlainOpen(repoPath)
+	if err != nil {
+		return "", errors.New("unable to open repository: " + err.Error())
+	}
+
+	// try get the latest tag to use as deployment tag
+	tagReferences, err := repository.Tags()
+	if err != nil {
+		log.Fatal("error getting repository tags: " + err.Error())
+	}
+	if tagReferences != nil {
+		latestTag, err := tagReferences.Next()
+		switch err {
+		case io.EOF:
+			// no tags
+		case nil:
+			return latestTag.Name().Short(), nil
+		default:
+			return "", errors.New("error getting latest repository tag ref: " + err.Error())
+		}
+	}
+
+	// try and get latest commit hash to use as deployment tag
+	commitReferences, err := repository.CommitObjects()
+	if err != nil {
+		log.Fatal("error getting repository commits: " + err.Error())
+	}
+	commit, err := commitReferences.Next()
+	if err != nil {
+		return "", errors.New("error getting latest repository commit: " + err.Error())
+	}
+	return commit.Hash.String(), nil
 }
