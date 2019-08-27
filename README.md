@@ -1,2 +1,2 @@
 # kubernite
-Kubernetes Deployment
+Drone Plugin for Kubernetes built using official kubernetes client-go 
