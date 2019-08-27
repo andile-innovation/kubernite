@@ -1,12 +1,10 @@
 package main
 
 import (
-	"encoding/base64"
 	"fmt"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	kubeRestclient "k8s.io/client-go/rest"
-	"log"
 	"os"
 )
 
@@ -15,18 +13,9 @@ func main() {
 	var err error
 
 	config.Host = os.Getenv("PLUGIN_KUBERNETES_SERVER")
-	config.TLSClientConfig.CAData, err = base64.URLEncoding.DecodeString(os.Getenv("PLUGIN_KUBERNETES_CERT_DATA"))
-	if err != nil {
-		log.Fatal("error decoding CA Data: " + err.Error())
-	}
-	config.TLSClientConfig.CertData, err = base64.URLEncoding.DecodeString(os.Getenv("PLUGIN_CLIENT_CERT_DATA"))
-	if err != nil {
-		log.Fatal("error decoding Cert Data: " + err.Error())
-	}
-	config.TLSClientConfig.KeyData, err = base64.URLEncoding.DecodeString(os.Getenv("PLUGIN_CLIENT_KEY_DATA"))
-	if err != nil {
-		log.Fatal("error decoding Key Data: " + err.Error())
-	}
+	config.TLSClientConfig.CAData = []byte(os.Getenv("PLUGIN_KUBERNETES_CERT_DATA"))
+	config.TLSClientConfig.CertData = []byte(os.Getenv("PLUGIN_KUBERNETES_CLIENT_CERT_DATA"))
+	config.TLSClientConfig.KeyData = []byte(os.Getenv("PLUGIN_KUBERNETES_CLIENT_KEY_DATA"))
 
 	// create the client set
 	clientset, err := kubernetes.NewForConfig(config)
