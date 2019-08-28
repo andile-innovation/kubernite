@@ -7,5 +7,5 @@ type ErrParsingManifestFile struct {
 }
 
 func (e ErrParsingManifestFile) Error() string {
-	return "error parsing manifest file: " + strings.Join(e.Reasons, "; ")
+	return "error parsing manifest file: " + strings.Join(e.Reasons, ", ")
 }

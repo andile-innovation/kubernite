@@ -1,4 +1,4 @@
-package main
+package git
 
 import (
 	"errors"
@@ -6,59 +6,55 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-git.v4"
 	"io"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	kubeRestclient "k8s.io/client-go/rest"
-	kubernetesManifest "kubernite/pkg/kubernetes/manifest"
 	"os"
+	"path/filepath"
 )
 
-func main() {
-
-	var config = new(kubeRestclient.Config)
-	var err error
-
-	deploymentTag, err := getDeploymentTag()
-	if err != nil {
-		log.Fatal("error getting deployment tag: " + err.Error())
-	}
-
-	updateDeploymentFile(deploymentTag)
-
-	config.Host = os.Getenv("PLUGIN_KUBERNETES_SERVER")
-	config.TLSClientConfig.CAData = []byte(os.Getenv("PLUGIN_KUBERNETES_CERT_DATA"))
-	config.TLSClientConfig.CertData = []byte(os.Getenv("PLUGIN_KUBERNETES_CLIENT_CERT_DATA"))
-	config.TLSClientConfig.KeyData = []byte(os.Getenv("PLUGIN_KUBERNETES_CLIENT_KEY_DATA"))
-
-	// create the client set
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	for {
-		pods, err := clientset.CoreV1().Pods("dev").List(v1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
-		fmt.Printf("There are %d pods in the cluster!\n", len(pods.Items))
-		break
-	}
+type Repository struct {
+	goGitRepository *git.Repository
 }
 
-func updateDeploymentFile(tag string) {
-	deploymentFile, err := kubernetesManifest.NewDeploymentFromFile(os.Getenv("PLUGIN_KUBERNETES_DEPLOYMENT_FILE_PATH"))
+func NewRepositoryFromFilePath(pathToRepository string) (*Repository, error) {
+	// validate given repository path
+	pathToRepository, err := filepath.Abs(pathToRepository)
 	if err != nil {
-		log.Fatal(err.Error())
+		return nil, ErrOpeningRepository{Reasons: []string{
+			"getting absolute path",
+			err.Error(),
+		}}
+	}
+	if pathToRepository == "" {
+		return nil, ErrOpeningRepository{Reasons: []string{
+			"given path to repository is blank",
+		}}
+	}
+	repositoryFileInfo, err := os.Stat(pathToRepository)
+	if err != nil {
+		return nil, ErrOpeningRepository{Reasons: []string{
+			"getting repository file info",
+			err.Error(),
+		}}
+	}
+	if !repositoryFileInfo.IsDir() {
+		return nil, ErrOpeningRepository{Reasons: []string{
+			fmt.Sprintf("'%s' is not a directory", pathToRepository),
+		}}
 	}
 
-	deploymentFile.Metadata.Annotations.KubernetesIOChangeCause = fmt.Sprintf(
-		"Deployent to version: %s",
-		tag,
-	)
+	// try and open repository at given path
+	repository, err := git.PlainOpen(pathToRepository)
+	if err != nil {
+		return nil, ErrOpeningRepository{Reasons: []string{
+			err.Error(),
+		}}
+	}
+
+	return &Repository{
+		goGitRepository: repository,
+	}, nil
 }
 
-func getDeploymentTag() (string, error) {
+func GetDeploymentTag() (string, error) {
 
 	// check if a tag has been provided as a plugin option
 	if os.Getenv("PLUGIN_DEPLOYMENT_TAG") != "" {
