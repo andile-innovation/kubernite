@@ -17,9 +17,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(gitRepo)
 
-	updateDeploymentFile("")
+	latestTag, err := gitRepo.GetLatestTagName()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("latest tag! ", latestTag)
 
 	var config = new(kubernetesRestClient.Config)
 	config.Host = os.Getenv("PLUGIN_KUBERNETES_SERVER")
