@@ -45,6 +45,10 @@ func main() {
 	}
 }
 
+func updateDeploymentFile(tag string) error {
+
+}
+
 func getDeploymentTag() (string, error) {
 
 	// check if a tag has been provided as a plugin option
