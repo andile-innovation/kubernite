@@ -46,7 +46,7 @@ func main() {
 }
 
 func updateDeploymentFile(tag string) error {
-
+	return nil
 }
 
 func getDeploymentTag() (string, error) {
