@@ -17,4 +17,5 @@ Kubernite is a Drone Plugin for Kubernetes built using official kubernetes clien
         kubernetes_client_key_data:
           from_secret: kubernetes_client_key_data
         deployment_tag_repository_path: /drone/src
+        deployment_file_path: src/deployments/kubernetes/Deployment.yaml
 ```

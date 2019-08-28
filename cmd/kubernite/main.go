@@ -3,12 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-git.v4"
 	"io"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	kubeRestclient "k8s.io/client-go/rest"
-	"log"
+	kubernetesManifest "kubernite/kubernetes/manifest"
 	"os"
 )
 
@@ -22,7 +23,7 @@ func main() {
 		log.Fatal("error getting deployment tag: " + err.Error())
 	}
 
-	fmt.Println("use: " + deploymentTag)
+	updateDeploymentFile(deploymentTag)
 
 	config.Host = os.Getenv("PLUGIN_KUBERNETES_SERVER")
 	config.TLSClientConfig.CAData = []byte(os.Getenv("PLUGIN_KUBERNETES_CERT_DATA"))
@@ -45,8 +46,13 @@ func main() {
 	}
 }
 
-func updateDeploymentFile(tag string) error {
-	return nil
+func updateDeploymentFile(tag string) {
+	deploymentFile, err := kubernetesManifest.NewDeploymentFromFile(os.Getenv("PLUGIN_KUBERNETES_DEPLOYMENT_FILE_PATH"))
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	fmt.Println(*deploymentFile)
 }
 
 func getDeploymentTag() (string, error) {
