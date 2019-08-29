@@ -20,7 +20,7 @@ const DeploymentKind Kind = "Deployment"
 type Manifest struct {
 	PathToFile  string
 	Kind        Kind
-	YAMLContent map[string]interface{}
+	YAMLContent map[interface{}]interface{}
 }
 
 func NewManifestFromFile(pathToManifestFile string) (*Manifest, error) {
@@ -56,10 +56,10 @@ func NewManifestFromFile(pathToManifestFile string) (*Manifest, error) {
 
 	// instantiate new manifest object
 	newManifest := new(Manifest)
-	newManifest.YAMLContent = make(map[string]interface{})
+	newManifest.YAMLContent = make(map[interface{}]interface{})
 
 	// parse manifest file
-	if err := yaml.Unmarshal(manifestFile, &(newManifest.YAMLContent)); err != nil {
+	if err := yaml.UnmarshalStrict(manifestFile, &(newManifest.YAMLContent)); err != nil {
 		return nil, ErrUnexpected{Reasons: []string{
 			"parsing deployment file",
 			err.Error(),
@@ -69,17 +69,35 @@ func NewManifestFromFile(pathToManifestFile string) (*Manifest, error) {
 	// set deployment manifest file path
 	newManifest.PathToFile = pathToManifestFile
 
-	// set manifest kind
+	// set manifest kind and populate top level objects
 	for key := range newManifest.YAMLContent {
+		object, found := newManifest.YAMLContent[key]
+		if !found {
+			return nil, ErrUnexpected{Reasons: []string{
+				"no object found at key",
+			}}
+		}
+
 		// look for the kind key
 		if key == "kind" {
-			kind, ok := newManifest.YAMLContent[key].(string)
+			kind, ok := object.(string)
 			if !ok {
 				return nil, ErrUnexpected{Reasons: []string{
 					"inferring type of manifest file kind field",
 				}}
 			}
 			newManifest.Kind = Kind(kind)
+		}
+	}
+
+	// confirm that manifest kind is valid
+	switch newManifest.Kind {
+	case DeploymentKind:
+	default:
+		return nil, ErrDeploymentManifestInvalid{
+			Reasons: []string{
+				fmt.Sprintf("invalid/unsupported manifest kind: '%s'", newManifest.Kind),
+			},
 		}
 	}
 
@@ -122,4 +140,33 @@ func (m *Manifest) WriteAtPath(pathToWriteManifestFile string) error {
 	}
 
 	return nil
+}
+
+func GetObjectMapAtKey(objectToSearch *map[interface{}]interface{}, accessor string) (map[interface{}]interface{}, error) {
+	// split accessor path
+	accessorKeys := strings.Split(accessor, ".")
+	if len(accessorKeys) == 0 {
+		return nil, ErrUnexpected{Reasons: []string{
+			"zero length accessor path",
+		}}
+	}
+
+	// find object addressed by first accessor
+	object, found := (*objectToSearch)[accessorKeys[0]]
+	if !found {
+		return nil, ErrKeyNotFoundInObject{
+			Key:    accessorKeys[0],
+			Object: *objectToSearch,
+		}
+	}
+
+	// infer object type
+	objectMap, ok := object.(map[interface{}]interface{})
+	if !ok {
+		return nil, ErrUnexpected{Reasons: []string{
+			"inferring type of object map",
+		}}
+	}
+
+	return objectMap, nil
 }

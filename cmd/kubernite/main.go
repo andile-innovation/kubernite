@@ -50,8 +50,17 @@ func main() {
 func updateDeploymentFile(tag string) {
 	deploymentFile, err := kubernetesManifest.NewDeploymentFromFile(os.Getenv("PLUGIN_KUBERNETES_DEPLOYMENT_FILE_PATH"))
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(err)
 	}
 
-	fmt.Println("got deployment file!", deploymentFile)
+	if err := deploymentFile.UpdatePodTemplateAnnotations(
+		"kubernetes.io/change-cause",
+		"Update image to new version",
+	); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := deploymentFile.WriteAtPath("output.yaml"); err != nil {
+		log.Fatal(err)
+	}
 }

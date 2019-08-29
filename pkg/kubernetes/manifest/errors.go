@@ -21,15 +21,27 @@ func (e ErrUnexpected) Error() string {
 	return "unexpected manifest file error: " + strings.Join(e.Reasons, ", ")
 }
 
-type ErrInvalidManifestKind struct {
-	Expected Kind
-	Actual   Kind
+type ErrManifestInvalid struct {
+	Reasons []string
 }
 
-func (e ErrInvalidManifestKind) Error() string {
-	return fmt.Sprintf(
-		"invalid manifest kind - expected '%s' vs actual '%s'",
-		e.Expected,
-		e.Actual,
-	)
+func (e ErrManifestInvalid) Error() string {
+	return "manifest invalid: " + strings.Join(e.Reasons, ", ")
+}
+
+type ErrDeploymentManifestInvalid struct {
+	Reasons []string
+}
+
+func (e ErrDeploymentManifestInvalid) Error() string {
+	return "deployment manifest invalid: " + strings.Join(e.Reasons, ", ")
+}
+
+type ErrKeyNotFoundInObject struct {
+	Key    string
+	Object interface{}
+}
+
+func (e ErrKeyNotFoundInObject) Error() string {
+	return fmt.Sprintf("key '%s' not found in object %v", e.Key, e.Object)
 }

@@ -1,5 +1,7 @@
 package manifest
 
+import "fmt"
+
 /*
 Deployment is a convenience wrapper the manifest object type that represents a deployment file
 */
@@ -23,11 +25,28 @@ func NewDeploymentFromFile(pathToDeploymentFile string) (*Deployment, error) {
 
 	// confirm that manifest kind is Deployment
 	if newDeployment.Kind != DeploymentKind {
-		return nil, ErrInvalidManifestKind{
-			Expected: DeploymentKind,
-			Actual:   newDeployment.Kind,
+		return nil, ErrDeploymentManifestInvalid{
+			Reasons: []string{
+				fmt.Sprintf(
+					"incorrect manifest kind '%s' - should be '%s' ",
+					newDeployment.Kind,
+					DeploymentKind,
+				),
+			},
 		}
 	}
 
 	return newDeployment, nil
+}
+
+func (d *Deployment) UpdatePodTemplateAnnotations(key, value string) error {
+	// find spec section
+	specSectionMap, err := GetObjectMapAtKey(&d.YAMLContent, "spec")
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(specSectionMap)
+
+	return nil
 }
