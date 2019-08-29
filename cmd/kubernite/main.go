@@ -13,17 +13,31 @@ import (
 
 func main() {
 
+	// open git repository
 	gitRepo, err := git.NewRepositoryFromFilePath(os.Getenv("PLUGIN_DEPLOYMENT_TAG_REPOSITORY_PATH"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// get the latest git tag on the repository
 	latestTag, err := gitRepo.GetLatestTagName()
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("latest tag! ", latestTag)
-	updateDeploymentFile(latestTag)
+
+	// open deployment file
+	deploymentFile, err := kubernetesManifest.NewDeploymentFromFile(os.Getenv("PLUGIN_KUBERNETES_DEPLOYMENT_FILE_PATH"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// update deployment file annotations with tag
+	if err := deploymentFile.UpdatePodTemplateAnnotations(
+		"kubernetes.io/change-cause",
+		fmt.Sprintf("update image to %s", latestTag),
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	var config = new(kubernetesRestClient.Config)
 	config.Host = os.Getenv("PLUGIN_KUBERNETES_SERVER")
@@ -44,23 +58,5 @@ func main() {
 		}
 		fmt.Printf("There are %d pods in the cluster!\n", len(pods.Items))
 		break
-	}
-}
-
-func updateDeploymentFile(tag string) {
-	deploymentFile, err := kubernetesManifest.NewDeploymentFromFile(os.Getenv("PLUGIN_KUBERNETES_DEPLOYMENT_FILE_PATH"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err := deploymentFile.UpdatePodTemplateAnnotations(
-		"kubernetes.io/change-cause",
-		"Update image to new versionsss",
-	); err != nil {
-		log.Fatal(err)
-	}
-
-	if err := deploymentFile.WriteAtPath("output.yaml"); err != nil {
-		log.Fatal(err)
 	}
 }
