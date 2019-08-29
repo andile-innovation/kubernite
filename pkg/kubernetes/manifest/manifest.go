@@ -8,8 +8,17 @@ import (
 	"path/filepath"
 )
 
+type Kind string
+
+func (k Kind) String() string {
+	return string(k)
+}
+
+const DeploymentKind Kind = "Deployment"
+
 type Manifest struct {
 	PathToFile  string
+	Kind        Kind
 	YAMLContent map[string]interface{}
 }
 
@@ -58,6 +67,20 @@ func NewManifest(pathToManifestFile string) (*Manifest, error) {
 
 	// set deployment manifest file path
 	newManifest.PathToFile = pathToManifestFile
+
+	// set manifest kind
+	for key := range newManifest.YAMLContent {
+		// look for the kind key
+		if key == "kind" {
+			kind, ok := newManifest.YAMLContent[key].(string)
+			if !ok {
+				return nil, ErrParsingManifestFile{Reasons: []string{
+					"inferring type of manifest file kind field",
+				}}
+			}
+			newManifest.Kind = Kind(kind)
+		}
+	}
 
 	return newManifest, nil
 }

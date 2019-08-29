@@ -24,6 +24,14 @@ func NewDeploymentFromFile(pathToDeploymentFile string) (*Deployment, error) {
 	newDeployment := new(Deployment)
 	newDeployment.Manifest = newManifest
 
+	// confirm that manifest kind is Deployment
+	if newDeployment.Kind != DeploymentKind {
+		return nil, ErrInvalidManifestKind{
+			Expected: DeploymentKind,
+			Actual:   newDeployment.Kind,
+		}
+	}
+
 	output, err := yaml.Marshal(newDeployment.YAMLContent)
 	if err != nil {
 		log.Fatal("error marshalling!")
