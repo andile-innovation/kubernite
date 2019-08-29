@@ -1,21 +1,18 @@
 package manifest
 
-import (
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"log"
-)
-
+/*
+Deployment is a convenience wrapper the manifest object type that represents a deployment file
+*/
 type Deployment struct {
 	*Manifest
 }
 
-func (d *Deployment) UpdateChangeCauseAnnotation(newValue string) error {
-	return nil
-}
-
+/*
+NewDeploymentFromFile creates a new deployment file wrapper from a file located at a
+given file path.
+*/
 func NewDeploymentFromFile(pathToDeploymentFile string) (*Deployment, error) {
-	newManifest, err := NewManifest(pathToDeploymentFile)
+	newManifest, err := NewManifestFromFile(pathToDeploymentFile)
 	if err != nil {
 		return nil, err
 	}
@@ -30,15 +27,6 @@ func NewDeploymentFromFile(pathToDeploymentFile string) (*Deployment, error) {
 			Expected: DeploymentKind,
 			Actual:   newDeployment.Kind,
 		}
-	}
-
-	output, err := yaml.Marshal(newDeployment.YAMLContent)
-	if err != nil {
-		log.Fatal("error marshalling!")
-	}
-	err = ioutil.WriteFile("output.yaml", output, 0644)
-	if err != nil {
-		log.Fatal("error writing out!!")
 	}
 
 	return newDeployment, nil

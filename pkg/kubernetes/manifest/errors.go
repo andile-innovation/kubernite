@@ -5,12 +5,20 @@ import (
 	"strings"
 )
 
-type ErrParsingManifestFile struct {
+type ErrInvalidFilePath struct {
 	Reasons []string
 }
 
-func (e ErrParsingManifestFile) Error() string {
-	return "error parsing manifest file: " + strings.Join(e.Reasons, ", ")
+func (e ErrInvalidFilePath) Error() string {
+	return "invalid manifest file path: " + strings.Join(e.Reasons, ", ")
+}
+
+type ErrUnexpected struct {
+	Reasons []string
+}
+
+func (e ErrUnexpected) Error() string {
+	return "unexpected manifest file error: " + strings.Join(e.Reasons, ", ")
 }
 
 type ErrInvalidManifestKind struct {
