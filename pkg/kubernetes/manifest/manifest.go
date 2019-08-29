@@ -142,7 +142,16 @@ func (m *Manifest) WriteAtPath(pathToWriteManifestFile string) error {
 	return nil
 }
 
-func GetObjectMapAtKey(objectToSearch *map[interface{}]interface{}, accessor string) (map[interface{}]interface{}, error) {
+func (m *Manifest) GetObjectMap(accessor string) (*map[interface{}]interface{}, error) {
+	if m.YAMLContent == nil {
+		return nil, ErrUnexpected{Reasons: []string{
+			"manifest YAML Content is nil",
+		}}
+	}
+	return GetObjectMapAtKey(&m.YAMLContent, accessor)
+}
+
+func GetObjectMapAtKey(objectToSearch *map[interface{}]interface{}, accessor string) (*map[interface{}]interface{}, error) {
 	// split accessor path
 	accessorKeys := strings.Split(accessor, ".")
 	if len(accessorKeys) == 0 {
@@ -177,7 +186,7 @@ func GetObjectMapAtKey(objectToSearch *map[interface{}]interface{}, accessor str
 
 	// check if we are at the end of the accessor path
 	if len(remainingAccessorPath) == 0 {
-		return objectMap, nil
+		return &objectMap, nil
 	}
 
 	// if we are not call this function again with the remaining accessors

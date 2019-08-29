@@ -41,7 +41,7 @@ func NewDeploymentFromFile(pathToDeploymentFile string) (*Deployment, error) {
 
 func (d *Deployment) UpdatePodTemplateAnnotations(key, value string) error {
 	// find spec section
-	specSectionMap, err := GetObjectMapAtKey(&d.YAMLContent, "spec.template")
+	specSectionMap, err := d.GetObjectMap("spec.template")
 	if err != nil {
 		return err
 	}
