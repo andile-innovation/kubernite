@@ -23,6 +23,7 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println("latest tag! ", latestTag)
+	updateDeploymentFile(latestTag)
 
 	var config = new(kubernetesRestClient.Config)
 	config.Host = os.Getenv("PLUGIN_KUBERNETES_SERVER")
@@ -52,8 +53,5 @@ func updateDeploymentFile(tag string) {
 		log.Fatal(err.Error())
 	}
 
-	deploymentFile.Metadata.Annotations.KubernetesIOChangeCause = fmt.Sprintf(
-		"Deployent to version: %s",
-		tag,
-	)
+	fmt.Println("got deployment file!", deploymentFile)
 }

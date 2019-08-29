@@ -1,68 +1,37 @@
 package manifest
 
 import (
-	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"os"
-	"path/filepath"
+	"log"
 )
 
 type Deployment struct {
-	Manifest   `yaml:"-"`
-	APIVersion string `yaml:"apiVersion"`
-	Kind       string `yaml:"kind"`
-	Metadata   struct {
-		Name        string `yaml:"name"`
-		Namespace   string `yaml:"namespace"`
-		Annotations struct {
-			KubernetesIOChangeCause string `yaml:"kubernetes.io/change-cause"`
-		} `yaml:"annotations"`
-	} `yaml:"metadata"`
+	*Manifest
+}
+
+func (d *Deployment) UpdateChangeCauseAnnotation(newValue string) error {
+	return nil
 }
 
 func NewDeploymentFromFile(pathToDeploymentFile string) (*Deployment, error) {
-	// validate given path to deployment file
-	pathToDeploymentFile, err := filepath.Abs(pathToDeploymentFile)
+	newManifest, err := NewManifest(pathToDeploymentFile)
 	if err != nil {
-		return nil, ErrParsingManifestFile{Reasons: []string{
-			"getting absolute path",
-			err.Error(),
-		}}
+		return nil, err
 	}
-	deploymentFileInfo, err := os.Stat(pathToDeploymentFile)
+
+	// instantiate new deployment file using manifest
+	newDeployment := new(Deployment)
+	newDeployment.Manifest = newManifest
+
+	output, err := yaml.Marshal(newDeployment.YAMLContent)
 	if err != nil {
-		return nil, ErrParsingManifestFile{Reasons: []string{
-			"getting file info",
-			err.Error(),
-		}}
+		log.Fatal("error marshalling!")
 	}
-	if deploymentFileInfo.IsDir() {
-		return nil, ErrParsingManifestFile{Reasons: []string{
-			fmt.Sprintf("'%s' is a directory", pathToDeploymentFile),
-		}}
-	}
-
-	// open deployment file
-	deploymentFile, err := ioutil.ReadFile(pathToDeploymentFile)
+	err = ioutil.WriteFile("output.yaml", output, 0644)
 	if err != nil {
-		return nil, ErrParsingManifestFile{Reasons: []string{
-			"reading deployment file",
-			err.Error(),
-		}}
+		log.Fatal("error writing out!!")
 	}
 
-	// parse deployment file
-	var parsedDeploymentFile Deployment
-	if err := yaml.Unmarshal(deploymentFile, &parsedDeploymentFile); err != nil {
-		return nil, ErrParsingManifestFile{Reasons: []string{
-			"parsing deployment file",
-			err.Error(),
-		}}
-	}
-
-	// set deployment manifest file path
-	parsedDeploymentFile.Manifest.PathToFile = pathToDeploymentFile
-
-	return &parsedDeploymentFile, nil
+	return newDeployment, nil
 }
