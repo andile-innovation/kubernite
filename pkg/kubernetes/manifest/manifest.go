@@ -170,9 +170,19 @@ func GetObjectMapAtKey(objectToSearch *map[interface{}]interface{}, accessor str
 	// find object addressed by first accessor
 	object, found := (*objectToSearch)[keyToFind]
 	if !found {
-		return nil, ErrKeyNotFoundInObject{
-			Key:    keyToFind,
-			Object: *objectToSearch,
+		// if it is not found
+		if len(remainingAccessorPath) == 0 {
+			// and we are at the end of the accessor path
+			// return key not found in object error
+			return nil, ErrKeyNotFoundInObject{
+				Key:    keyToFind,
+				Object: *objectToSearch,
+			}
+		}
+		// otherwise return invalid accessor
+		return nil, ErrInvalidAccessorPath{
+			AccessorPath: accessor,
+			Object:       *objectToSearch,
 		}
 	}
 

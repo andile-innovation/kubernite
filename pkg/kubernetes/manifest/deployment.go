@@ -40,13 +40,34 @@ func NewDeploymentFromFile(pathToDeploymentFile string) (*Deployment, error) {
 }
 
 func (d *Deployment) UpdatePodTemplateAnnotations(key, value string) error {
-	// find spec section
-	specSectionMap, err := d.GetObjectMap("spec.template")
+	// find annotations section
+	annotationsSectionMap, err := d.GetObjectMap("spec.template.metadata.annotations")
 	if err != nil {
-		return err
+		switch err.(type) {
+		case ErrKeyNotFoundInObject:
+			// if annotations is not found in metadata, get metadata section
+			metadataSectionMap, err := d.GetObjectMap("spec.template.metadata")
+			if err != nil {
+				return err
+			}
+			// add annotation section to it
+			(*metadataSectionMap)["annotations"] = make(map[interface{}]interface{})
+			// find it again
+			annotationsSectionMap, err = d.GetObjectMap("spec.template.metadata.annotations")
+			if err != nil {
+				return ErrUnexpected{Reasons: []string{
+					"unable to add annotations section to pod template",
+					err.Error(),
+				}}
+			}
+		default:
+			return err
+		}
 	}
 
-	fmt.Println(specSectionMap)
+	fmt.Println(annotationsSectionMap)
+
+	(*annotationsSectionMap)[key] = value
 
 	return nil
 }

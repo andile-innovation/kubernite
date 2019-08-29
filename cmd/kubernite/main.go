@@ -55,7 +55,7 @@ func updateDeploymentFile(tag string) {
 
 	if err := deploymentFile.UpdatePodTemplateAnnotations(
 		"kubernetes.io/change-cause",
-		"Update image to new version",
+		"Update image to new versionsss",
 	); err != nil {
 		log.Fatal(err)
 	}

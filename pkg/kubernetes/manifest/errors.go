@@ -37,6 +37,15 @@ func (e ErrDeploymentManifestInvalid) Error() string {
 	return "deployment manifest invalid: " + strings.Join(e.Reasons, ", ")
 }
 
+type ErrInvalidAccessorPath struct {
+	AccessorPath string
+	Object       interface{}
+}
+
+func (e ErrInvalidAccessorPath) Error() string {
+	return fmt.Sprintf("invalid accessor path '%s' for object %v", e.AccessorPath, e.Object)
+}
+
 type ErrKeyNotFoundInObject struct {
 	Key    string
 	Object interface{}
