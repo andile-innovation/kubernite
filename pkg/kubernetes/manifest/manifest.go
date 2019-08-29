@@ -151,11 +151,18 @@ func GetObjectMapAtKey(objectToSearch *map[interface{}]interface{}, accessor str
 		}}
 	}
 
+	// get the key to find and build remaining accessor path
+	keyToFind := accessorKeys[0]
+	var remainingAccessorPath string
+	if len(accessorKeys) > 1 {
+		remainingAccessorPath = strings.Join(accessorKeys[1:], ".")
+	}
+
 	// find object addressed by first accessor
-	object, found := (*objectToSearch)[accessorKeys[0]]
+	object, found := (*objectToSearch)[keyToFind]
 	if !found {
 		return nil, ErrKeyNotFoundInObject{
-			Key:    accessorKeys[0],
+			Key:    keyToFind,
 			Object: *objectToSearch,
 		}
 	}
@@ -168,5 +175,11 @@ func GetObjectMapAtKey(objectToSearch *map[interface{}]interface{}, accessor str
 		}}
 	}
 
-	return objectMap, nil
+	// check if we are at the end of the accessor path
+	if len(remainingAccessorPath) == 0 {
+		return objectMap, nil
+	}
+
+	// if we are not call this function again with the remaining accessors
+	return GetObjectMapAtKey(&objectMap, remainingAccessorPath)
 }
