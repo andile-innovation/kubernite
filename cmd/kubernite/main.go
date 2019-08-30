@@ -38,22 +38,21 @@ func main() {
 	}
 
 	// write file
-	if err := deploymentFile.WriteAtPath("output.yaml"); err != nil {
+	if err := deploymentFile.WriteToYAMLAtPath("output.yaml"); err != nil {
 		log.Fatal(err)
 	}
 
 	// create a kubernetes client
-	_, err = kubernetesClient.NewClientFromKuberniteConfig(kuberniteConf)
-	//kubeClient, err := kubernetesClient.NewClientFromKuberniteConfig(kuberniteConf)
+	kubeClient, err := kubernetesClient.NewClientFromKuberniteConfig(kuberniteConf)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	//deploymentClient := kubeClient.Clientset.AppsV1().Deployments(deploymentFile.Namespace)
-	//
-	//if _, err := deploymentClient.Update(deploymentFile.Deployment); err != nil {
-	//	log.Fatal(err)
-	//}
+	// apply the deployment
+	deploymentClient := kubeClient.Clientset.AppsV1().Deployments(deploymentFile.Namespace)
+	if _, err := deploymentClient.Update(deploymentFile.Deployment); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func handleTagEvent(kuberniteConf *kuberniteConfig.Config) (*kubernetesManifest.Deployment, error) {

@@ -1,12 +1,16 @@
 package manifest
 
 import (
+	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
 	v1 "k8s.io/api/apps/v1"
 	k8sYamlUtil "k8s.io/apimachinery/pkg/util/yaml"
 	"os"
 	"path/filepath"
+	"sigs.k8s.io/yaml"
+	"strings"
 )
 
 /*
@@ -90,18 +94,48 @@ func (d *Deployment) UpdatePodTemplateAnnotations(key, value string) error {
 }
 
 /*
+WriteToYAML writes the manifest file to disk at it's original filepath
+*/
+func (d *Deployment) WriteToYAML() error {
+	return d.WriteToYAMLAtPath(d.PathToFile)
+}
+
+/*
 WriteAtPath writes the manifest file to disk at given file path
 */
-func (d *Deployment) WriteAtPath(pathToWriteManifestFile string) error {
-	deploymentFileBytes, err := d.Marshal()
+func (d *Deployment) WriteToYAMLAtPath(pathToWriteManifestFile string) error {
+	// confirm that file path has correct extension
+	if !(strings.HasSuffix(pathToWriteManifestFile, ".yaml") || strings.HasSuffix(pathToWriteManifestFile, ".yml")) {
+		return ErrInvalidFilePath{Reasons: []string{
+			fmt.Sprintf("'%s' does not end in .yaml or .yml", pathToWriteManifestFile),
+		}}
+	}
+
+	// marshal deployment object to json
+	jsonData, err := json.Marshal(d.Deployment)
 	if err != nil {
 		return ErrUnexpected{Reasons: []string{
-			"marshalling deployment object",
+			"marshalling to json",
 			err.Error(),
 		}}
 	}
 
-	fmt.Println(string(deploymentFileBytes))
+	// convert json data to yaml data
+	yamlData, err := yaml.JSONToYAML(jsonData)
+	if err != nil {
+		return ErrUnexpected{Reasons: []string{
+			"converting json to yaml",
+			err.Error(),
+		}}
+	}
+
+	// write to file
+	if err := ioutil.WriteFile(pathToWriteManifestFile, yamlData, 0644); err != nil {
+		return ErrUnexpected{Reasons: []string{
+			"writing to file",
+			err.Error(),
+		}}
+	}
 
 	return nil
 }
