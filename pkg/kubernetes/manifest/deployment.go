@@ -1,6 +1,9 @@
 package manifest
 
-import "fmt"
+import (
+	"fmt"
+	k8sYamlUtil "k8s.io/apimachinery/pkg/util/yaml"
+)
 
 /*
 Deployment is a convenience wrapper the manifest object type that represents a deployment file
@@ -101,4 +104,22 @@ func (d *Deployment) UpdatePodTemplateAnnotations(key, value string) error {
 	(*annotationsSectionMap)[key] = value
 
 	return nil
+}
+
+func (d *Deployment) ToJSON() ([]byte, error) {
+	deploymentFileContents, err := d.GetDeploymentFileContents()
+	if err != nil {
+		return nil, ErrUnexpected{Reasons: []string{
+			"getting deployment file contents",
+		}}
+	}
+
+	jsonContent, err := k8sYamlUtil.ToJSON(deploymentFileContents)
+	if err != nil {
+		return nil, ErrUnexpected{Reasons: []string{
+			"converting to json",
+		}}
+	}
+
+	return jsonContent, nil
 }
