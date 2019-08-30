@@ -16,7 +16,12 @@ func main() {
 
 	for _, e := range os.Environ() {
 		pair := strings.Split(e, "=")
-		fmt.Println(pair[0])
+		if len(pair) < 2 {
+			continue
+		}
+		if strings.HasPrefix(pair[0], "DRONE") || strings.HasPrefix(pair[0], "CI") {
+			fmt.Printf("%s = %s\n", pair[0], pair[1])
+		}
 	}
 
 	// open git repository
