@@ -14,6 +14,10 @@ func init() {
 	err = viper.BindEnv("KubernetesClientCertData", "PLUGIN_KUBERNETES_CLIENT_CERT_DATA")
 	err = viper.BindEnv("KubernetesClientKeyData", "PLUGIN_KUBERNETES_CLIENT_KEY_DATA")
 	if err != nil {
+		err = ErrPackageInitialisation{Reasons: []string{
+			"binding viper keys to environment variables",
+			err.Error(),
+		}}
 		log.Fatal(err)
 	}
 }
