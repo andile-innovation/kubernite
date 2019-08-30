@@ -33,11 +33,7 @@ func main() {
 	if kuberniteConf.DryRun {
 		log.Info(fmt.Sprintf("____%s event dry run____", kuberniteConf.BuildEvent))
 		log.Info(fmt.Sprintf("kubectl apply -f %s", kuberniteConf.KubernetesDeploymentFilePath))
-		deploymentFileContents, err := deploymentFile.GetDeploymentFileContents()
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Info(fmt.Sprintf("\n%s", deploymentFileContents))
+		log.Info(fmt.Sprintf("\n%s", deploymentFile.String()))
 		return
 	}
 
@@ -47,26 +43,17 @@ func main() {
 	}
 
 	// create a kubernetes client
-	kubeClient, err := kubernetesClient.NewClientFromKuberniteConfig(kuberniteConf)
+	_, err = kubernetesClient.NewClientFromKuberniteConfig(kuberniteConf)
+	//kubeClient, err := kubernetesClient.NewClientFromKuberniteConfig(kuberniteConf)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// apply updated deployment file
-	deploymentFileJSON, err := deploymentFile.ToJSON()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	response := kubeClient.RESTClient().Verb("apply").Body(deploymentFileJSON).Do()
-	if response.Error() != nil {
-		log.Fatal(response.Error())
-	}
-	responseString, err := response.Raw()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	fmt.Println(string(responseString))
+	//deploymentClient := kubeClient.Clientset.AppsV1().Deployments(deploymentFile.Namespace)
+	//
+	//if _, err := deploymentClient.Update(deploymentFile.Deployment); err != nil {
+	//	log.Fatal(err)
+	//}
 }
 
 func handleTagEvent(kuberniteConf *kuberniteConfig.Config) (*kubernetesManifest.Deployment, error) {

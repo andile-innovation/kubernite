@@ -2,14 +2,19 @@ package manifest
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
+	v1 "k8s.io/api/apps/v1"
 	k8sYamlUtil "k8s.io/apimachinery/pkg/util/yaml"
+	"os"
+	"path/filepath"
 )
 
 /*
 Deployment is a convenience wrapper the manifest object type that represents a deployment file
 */
 type Deployment struct {
-	*Manifest
+	*v1.Deployment
+	PathToFile string
 }
 
 /*
@@ -17,109 +22,86 @@ NewDeploymentFromFile creates a new deployment file wrapper from a file located 
 given file path.
 */
 func NewDeploymentFromFile(pathToDeploymentFile string) (*Deployment, error) {
-	newManifest, err := NewManifestFromFile(pathToDeploymentFile)
+	// validate given path to deployment file
+	pathToDeploymentFile, err := filepath.Abs(pathToDeploymentFile)
 	if err != nil {
-		return nil, err
+		return nil, ErrInvalidFilePath{Reasons: []string{
+			"could not convert to absolute path",
+			err.Error(),
+		}}
+	}
+	deploymentFileInfo, err := os.Stat(pathToDeploymentFile)
+	if err != nil {
+		return nil, ErrInvalidFilePath{Reasons: []string{
+			"could not get file info at path",
+			err.Error(),
+		}}
+	}
+	if deploymentFileInfo.IsDir() {
+		return nil, ErrInvalidFilePath{Reasons: []string{
+			fmt.Sprintf("'%s' is a directory", pathToDeploymentFile),
+		}}
 	}
 
-	// instantiate new deployment file using manifest
+	// instantiate a new deployment file and set path
 	newDeployment := new(Deployment)
-	newDeployment.Manifest = newManifest
+	newDeployment.Deployment = new(v1.Deployment)
+	newDeployment.PathToFile = pathToDeploymentFile
 
-	// confirm that manifest kind is Deployment
-	if newDeployment.Kind != DeploymentKind {
-		return nil, ErrDeploymentManifestInvalid{
-			Reasons: []string{
-				fmt.Sprintf(
-					"incorrect manifest kind '%s' - should be '%s' ",
-					newDeployment.Kind,
-					DeploymentKind,
-				),
-			},
+	// open a file reader for the deployment file
+	deploymentFileReader, err := os.Open(pathToDeploymentFile)
+	if err != nil {
+		return nil, ErrUnexpected{Reasons: []string{
+			"opening deployment file",
+			err.Error(),
+		}}
+	}
+	defer func() {
+		if err := deploymentFileReader.Close(); err != nil {
+			log.Error("closing deployment file: " + err.Error())
 		}
+	}()
+
+	// decode the deployment yaml file
+	if err := k8sYamlUtil.NewYAMLOrJSONDecoder(deploymentFileReader, 512).Decode(&newDeployment.Deployment); err != nil {
+		return nil, ErrUnexpected{Reasons: []string{
+			"decoding deployment file",
+			err.Error(),
+		}}
 	}
 
 	return newDeployment, nil
 }
 
 func (d *Deployment) UpdateAnnotations(key, value string) error {
-	// find annotations section
-	annotationsSectionMap, err := d.GetObjectMap("metadata.annotations")
-	if err != nil {
-		switch err.(type) {
-		case ErrKeyNotFoundInObject:
-			// if annotations is not found in metadata, get metadata section
-			metadataSectionMap, err := d.GetObjectMap("metadata")
-			if err != nil {
-				return err
-			}
-			// add annotation section to it
-			(*metadataSectionMap)["annotations"] = make(map[interface{}]interface{})
-			// find it again
-			annotationsSectionMap, err = d.GetObjectMap("metadata.annotations")
-			if err != nil {
-				return ErrUnexpected{Reasons: []string{
-					"unable to add annotations section to deployment file",
-					err.Error(),
-				}}
-			}
-		default:
-			return err
-		}
+	if d.Annotations == nil {
+		d.Annotations = make(map[string]string)
 	}
-
-	// update annotation
-	(*annotationsSectionMap)[key] = value
-
+	d.Annotations[key] = value
 	return nil
 }
 
 func (d *Deployment) UpdatePodTemplateAnnotations(key, value string) error {
-	// find annotations section
-	annotationsSectionMap, err := d.GetObjectMap("spec.template.metadata.annotations")
-	if err != nil {
-		switch err.(type) {
-		case ErrKeyNotFoundInObject:
-			// if annotations is not found in metadata, get metadata section
-			metadataSectionMap, err := d.GetObjectMap("spec.template.metadata")
-			if err != nil {
-				return err
-			}
-			// add annotation section to it
-			(*metadataSectionMap)["annotations"] = make(map[interface{}]interface{})
-			// find it again
-			annotationsSectionMap, err = d.GetObjectMap("spec.template.metadata.annotations")
-			if err != nil {
-				return ErrUnexpected{Reasons: []string{
-					"unable to add annotations section to pod template",
-					err.Error(),
-				}}
-			}
-		default:
-			return err
-		}
+	if d.Spec.Template.Annotations == nil {
+		d.Spec.Template.Annotations = make(map[string]string)
 	}
-
-	// update annotation
-	(*annotationsSectionMap)[key] = value
-
+	d.Spec.Template.Annotations[key] = value
 	return nil
 }
 
-func (d *Deployment) ToJSON() ([]byte, error) {
-	deploymentFileContents, err := d.GetDeploymentFileContents()
+/*
+WriteAtPath writes the manifest file to disk at given file path
+*/
+func (d *Deployment) WriteAtPath(pathToWriteManifestFile string) error {
+	deploymentFileBytes, err := d.Marshal()
 	if err != nil {
-		return nil, ErrUnexpected{Reasons: []string{
-			"getting deployment file contents",
+		return ErrUnexpected{Reasons: []string{
+			"marshalling deployment object",
+			err.Error(),
 		}}
 	}
 
-	jsonContent, err := k8sYamlUtil.ToJSON(deploymentFileContents)
-	if err != nil {
-		return nil, ErrUnexpected{Reasons: []string{
-			"converting to json",
-		}}
-	}
+	fmt.Println(string(deploymentFileBytes))
 
-	return jsonContent, nil
+	return nil
 }
