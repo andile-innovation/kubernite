@@ -4,6 +4,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"gopkg.in/go-playground/validator.v9"
+	"kubernite/pkg/git"
 )
 
 func init() {
@@ -24,13 +25,13 @@ func init() {
 }
 
 type Config struct {
-	DeploymentRepositoryPath     string `validate:"required"`
-	KubernetesDeploymentFilePath string `validate:"required"`
-	KubernetesServer             string `validate:"required"`
-	KubernetesCertData           string `validate:"required"`
-	KubernetesClientCertData     string `validate:"required"`
-	KubernetesClientKeyData      string `validate:"required"`
-	BuildEvent                   string `validate:"required,eq=push|eq=tag|eq=merge"`
+	DeploymentRepositoryPath     string    `validate:"required"`
+	KubernetesDeploymentFilePath string    `validate:"required"`
+	KubernetesServer             string    `validate:"required"`
+	KubernetesCertData           string    `validate:"required"`
+	KubernetesClientCertData     string    `validate:"required"`
+	KubernetesClientKeyData      string    `validate:"required"`
+	BuildEvent                   git.Event `validate:"required"`
 }
 
 func GetConfig() (*Config, error) {

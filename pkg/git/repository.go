@@ -10,6 +10,10 @@ import (
 	"path/filepath"
 )
 
+type Event string
+
+const TagEvent Event = "tag"
+
 type Repository struct {
 	goGit.Repository
 }
