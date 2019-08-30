@@ -71,12 +71,24 @@ func handleTagEvent(kuberniteConf *kuberniteConfig.Config) error {
 		log.Fatal(err)
 	}
 
-	// update deployment file annotations with tag
-	if err := deploymentFile.UpdatePodTemplateAnnotations(
+	// update deployment file annotations with tag and event information
+	if err := deploymentFile.UpdateAnnotations(
 		"kubernetes.io/change-cause",
-		fmt.Sprintf("update image to %s", latestTag),
+		fmt.Sprintf("kubernite handled tag event - image updated to %s", latestTag),
 	); err != nil {
 		log.Fatal(err)
+	}
+	if err := deploymentFile.UpdatePodTemplateAnnotations(
+		"kubernetes.io/change-cause",
+		fmt.Sprintf("kubernite handled tag event - image updated to %s", latestTag),
+	); err != nil {
+		log.Fatal(err)
+	}
+
+	if kuberniteConf.DryRun {
+		log.Info("____tag event dry run____")
+		log.Info(fmt.Sprintf("kubectl apply -f %s", kuberniteConf.KubernetesDeploymentFilePath))
+		return nil
 	}
 
 	return nil
@@ -101,12 +113,24 @@ func handleOtherEvent(kuberniteConf *kuberniteConfig.Config) error {
 		log.Fatal(err)
 	}
 
-	// update deployment file annotations with hash
-	if err := deploymentFile.UpdatePodTemplateAnnotations(
+	// update deployment file annotations with tag and event information
+	if err := deploymentFile.UpdateAnnotations(
 		"kubernetes.io/change-cause",
-		fmt.Sprintf("update image to %s", latestCommitHash),
+		fmt.Sprintf("kubernite handled %s event - commit hash %s", kuberniteConf.BuildEvent, latestCommitHash),
 	); err != nil {
 		log.Fatal(err)
+	}
+	if err := deploymentFile.UpdatePodTemplateAnnotations(
+		"kubernetes.io/change-cause",
+		fmt.Sprintf("kubernite handled %s event - commit hash %s", kuberniteConf.BuildEvent, latestCommitHash),
+	); err != nil {
+		log.Fatal(err)
+	}
+
+	if kuberniteConf.DryRun {
+		log.Info(fmt.Sprintf("____%s event dry run____", kuberniteConf.BuildEvent))
+		log.Infof(fmt.Sprintf("kubectl apply -f %s", kuberniteConf.KubernetesDeploymentFilePath))
+		return nil
 	}
 
 	return nil

@@ -12,6 +12,10 @@ import (
 
 type Event string
 
+func (e Event) String() string {
+	return string(e)
+}
+
 const TagEvent Event = "tag"
 
 type Repository struct {

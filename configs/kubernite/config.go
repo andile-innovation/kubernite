@@ -15,6 +15,7 @@ func init() {
 	err = viper.BindEnv("KubernetesClientCertData", "PLUGIN_KUBERNETES_CLIENT_CERT_DATA")
 	err = viper.BindEnv("KubernetesClientKeyData", "PLUGIN_KUBERNETES_CLIENT_KEY_DATA")
 	err = viper.BindEnv("BuildEvent", "DRONE_BUILD_EVENT")
+	err = viper.BindEnv("DryRun", "PLUGIN_DRY_RUN")
 	if err != nil {
 		err = ErrPackageInitialisation{Reasons: []string{
 			"binding viper keys to environment variables",
@@ -32,6 +33,7 @@ type Config struct {
 	KubernetesClientCertData     string    `validate:"required"`
 	KubernetesClientKeyData      string    `validate:"required"`
 	BuildEvent                   git.Event `validate:"required"`
+	DryRun                       bool
 }
 
 func GetConfig() (*Config, error) {
