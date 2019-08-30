@@ -9,9 +9,15 @@ import (
 	"kubernite/pkg/git"
 	kubernetesManifest "kubernite/pkg/kubernetes/manifest"
 	"os"
+	"strings"
 )
 
 func main() {
+
+	for _, e := range os.Environ() {
+		pair := strings.Split(e, "=")
+		fmt.Println(pair[0])
+	}
 
 	// open git repository
 	gitRepo, err := git.NewRepositoryFromFilePath(os.Getenv("PLUGIN_DEPLOYMENT_TAG_REPOSITORY_PATH"))
