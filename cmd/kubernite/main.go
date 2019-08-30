@@ -9,6 +9,7 @@ import (
 	kuberniteConfig "kubernite/configs/kubernite"
 	"kubernite/pkg/git"
 	kubernetesManifest "kubernite/pkg/kubernetes/manifest"
+	"time"
 )
 
 func main() {
@@ -74,13 +75,21 @@ func handleTagEvent(kuberniteConf *kuberniteConfig.Config) error {
 	// update deployment file annotations with tag and event information
 	if err := deploymentFile.UpdateAnnotations(
 		"kubernetes.io/change-cause",
-		fmt.Sprintf("kubernite handled tag event - image updated to %s", latestTag),
+		fmt.Sprintf(
+			"kubernite handled tag event @ %s - image updated to %s",
+			time.Now().Format("Jan-02-2006 15:04:05"),
+			latestTag,
+		),
 	); err != nil {
 		log.Fatal(err)
 	}
 	if err := deploymentFile.UpdatePodTemplateAnnotations(
 		"kubernetes.io/change-cause",
-		fmt.Sprintf("kubernite handled tag event - image updated to %s", latestTag),
+		fmt.Sprintf(
+			"kubernite handled tag event @ %s - image updated to %s",
+			time.Now().Format("Jan-02-2006 15:04:05"),
+			latestTag,
+		),
 	); err != nil {
 		log.Fatal(err)
 	}
@@ -88,6 +97,11 @@ func handleTagEvent(kuberniteConf *kuberniteConfig.Config) error {
 	if kuberniteConf.DryRun {
 		log.Info("____tag event dry run____")
 		log.Info(fmt.Sprintf("kubectl apply -f %s", kuberniteConf.KubernetesDeploymentFilePath))
+		deploymentFileContents, err := deploymentFile.GetDeploymentFileContents()
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Info(fmt.Sprintf("\n%s", deploymentFileContents))
 		return nil
 	}
 
@@ -116,20 +130,37 @@ func handleOtherEvent(kuberniteConf *kuberniteConfig.Config) error {
 	// update deployment file annotations with tag and event information
 	if err := deploymentFile.UpdateAnnotations(
 		"kubernetes.io/change-cause",
-		fmt.Sprintf("kubernite handled %s event - commit hash %s", kuberniteConf.BuildEvent, latestCommitHash),
+		fmt.Sprintf(
+			"kubernite handled %s event @ %s - commit hash %s",
+			time.Now().Format("Jan-02-2006 15:04:05"),
+			kuberniteConf.BuildEvent,
+			latestCommitHash,
+		),
 	); err != nil {
 		log.Fatal(err)
 	}
 	if err := deploymentFile.UpdatePodTemplateAnnotations(
 		"kubernetes.io/change-cause",
-		fmt.Sprintf("kubernite handled %s event - commit hash %s", kuberniteConf.BuildEvent, latestCommitHash),
+		fmt.Sprintf(
+			"kubernite handled %s event @ %s - commit hash %s",
+			kuberniteConf.BuildEvent,
+			time.Now().Format("Jan-02-2006 15:04:05"),
+			latestCommitHash,
+		),
 	); err != nil {
 		log.Fatal(err)
 	}
 
+	// write the deployment file
+
 	if kuberniteConf.DryRun {
 		log.Info(fmt.Sprintf("____%s event dry run____", kuberniteConf.BuildEvent))
-		log.Infof(fmt.Sprintf("kubectl apply -f %s", kuberniteConf.KubernetesDeploymentFilePath))
+		log.Info(fmt.Sprintf("kubectl apply -f %s", kuberniteConf.KubernetesDeploymentFilePath))
+		deploymentFileContents, err := deploymentFile.GetDeploymentFileContents()
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Info(fmt.Sprintf("\n%s", deploymentFileContents))
 		return nil
 	}
 

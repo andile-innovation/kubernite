@@ -151,6 +151,19 @@ func (m *Manifest) GetObjectMap(accessor string) (*map[interface{}]interface{}, 
 	return GetObjectMapAtKey(&m.YAMLContent, accessor)
 }
 
+func (m *Manifest) GetDeploymentFileContents() ([]byte, error) {
+	// marshall manifest
+	marshalledYAML, err := yaml.Marshal(m.YAMLContent)
+	if err != nil {
+		return nil, ErrUnexpected{Reasons: []string{
+			"marshalling yaml content",
+			err.Error(),
+		}}
+	}
+
+	return marshalledYAML, nil
+}
+
 func GetObjectMapAtKey(objectToSearch *map[interface{}]interface{}, accessor string) (*map[interface{}]interface{}, error) {
 	// split accessor path
 	accessorKeys := strings.Split(accessor, ".")
