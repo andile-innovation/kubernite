@@ -6,6 +6,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	kubernetesRestClient "k8s.io/client-go/rest"
+	kuberniteConfig "kubernite/configs/kubernite"
 	"kubernite/pkg/git"
 	kubernetesManifest "kubernite/pkg/kubernetes/manifest"
 	"os"
@@ -13,6 +14,12 @@ import (
 )
 
 func main() {
+
+	conf, err := kuberniteConfig.GetConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(conf.DeploymentRepositoryPath)
 
 	for _, e := range os.Environ() {
 		pair := strings.Split(e, "=")
@@ -25,7 +32,7 @@ func main() {
 	}
 
 	// open git repository
-	gitRepo, err := git.NewRepositoryFromFilePath(os.Getenv("PLUGIN_DEPLOYMENT_TAG_REPOSITORY_PATH"))
+	gitRepo, err := git.NewRepositoryFromFilePath(conf.DeploymentRepositoryPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,7 +44,7 @@ func main() {
 	}
 
 	// open deployment file
-	deploymentFile, err := kubernetesManifest.NewDeploymentFromFile(os.Getenv("PLUGIN_KUBERNETES_DEPLOYMENT_FILE_PATH"))
+	deploymentFile, err := kubernetesManifest.NewDeploymentFromFile(conf.KubernetesDeploymentFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,10 +58,10 @@ func main() {
 	}
 
 	var config = new(kubernetesRestClient.Config)
-	config.Host = os.Getenv("PLUGIN_KUBERNETES_SERVER")
-	config.TLSClientConfig.CAData = []byte(os.Getenv("PLUGIN_KUBERNETES_CERT_DATA"))
-	config.TLSClientConfig.CertData = []byte(os.Getenv("PLUGIN_KUBERNETES_CLIENT_CERT_DATA"))
-	config.TLSClientConfig.KeyData = []byte(os.Getenv("PLUGIN_KUBERNETES_CLIENT_KEY_DATA"))
+	config.Host = conf.KubernetesServer
+	config.TLSClientConfig.CAData = []byte(conf.KubernetesCertData)
+	config.TLSClientConfig.CertData = []byte(conf.KubernetesClientCertData)
+	config.TLSClientConfig.KeyData = []byte(conf.KubernetesClientKeyData)
 
 	// create the client set
 	clientset, err := kubernetes.NewForConfig(config)
