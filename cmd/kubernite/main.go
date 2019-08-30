@@ -11,34 +11,30 @@ import (
 	kubernetesManifest "kubernite/pkg/kubernetes/manifest"
 )
 
-var conf *kuberniteConfig.Config
-
 func main() {
-	var err error
-
 	// parse configuration
-	conf, err = kuberniteConfig.GetConfig()
+	kuberniteConf, err := kuberniteConfig.GetConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// handle build event
-	switch conf.BuildEvent {
+	switch kuberniteConf.BuildEvent {
 	case git.TagEvent:
-		if err := handleTagEvent(); err != nil {
+		if err := handleTagEvent(kuberniteConf); err != nil {
 			log.Fatal(err)
 		}
 	default:
-		if err := handleOtherEvent(); err != nil {
+		if err := handleOtherEvent(kuberniteConf); err != nil {
 			log.Fatal(err)
 		}
 	}
 
 	var config = new(kubernetesRestClient.Config)
-	config.Host = conf.KubernetesServer
-	config.TLSClientConfig.CAData = []byte(conf.KubernetesCertData)
-	config.TLSClientConfig.CertData = []byte(conf.KubernetesClientCertData)
-	config.TLSClientConfig.KeyData = []byte(conf.KubernetesClientKeyData)
+	config.Host = kuberniteConf.KubernetesServer
+	config.TLSClientConfig.CAData = []byte(kuberniteConf.KubernetesCertData)
+	config.TLSClientConfig.CertData = []byte(kuberniteConf.KubernetesClientCertData)
+	config.TLSClientConfig.KeyData = []byte(kuberniteConf.KubernetesClientKeyData)
 
 	// create the client set
 	clientset, err := kubernetes.NewForConfig(config)
@@ -56,9 +52,9 @@ func main() {
 	}
 }
 
-func handleTagEvent() error {
+func handleTagEvent(kuberniteConf *kuberniteConfig.Config) error {
 	// open git repository
-	gitRepo, err := git.NewRepositoryFromFilePath(conf.DeploymentRepositoryPath)
+	gitRepo, err := git.NewRepositoryFromFilePath(kuberniteConf.DeploymentRepositoryPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -70,7 +66,7 @@ func handleTagEvent() error {
 	}
 
 	// open deployment file
-	deploymentFile, err := kubernetesManifest.NewDeploymentFromFile(conf.KubernetesDeploymentFilePath)
+	deploymentFile, err := kubernetesManifest.NewDeploymentFromFile(kuberniteConf.KubernetesDeploymentFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -86,9 +82,9 @@ func handleTagEvent() error {
 	return nil
 }
 
-func handleOtherEvent() error {
+func handleOtherEvent(kuberniteConf *kuberniteConfig.Config) error {
 	// open git repository
-	gitRepo, err := git.NewRepositoryFromFilePath(conf.DeploymentRepositoryPath)
+	gitRepo, err := git.NewRepositoryFromFilePath(kuberniteConf.DeploymentRepositoryPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -100,7 +96,7 @@ func handleOtherEvent() error {
 	}
 
 	// open deployment file
-	deploymentFile, err := kubernetesManifest.NewDeploymentFromFile(conf.KubernetesDeploymentFilePath)
+	deploymentFile, err := kubernetesManifest.NewDeploymentFromFile(kuberniteConf.KubernetesDeploymentFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
