@@ -132,8 +132,8 @@ func handleOtherEvent(kuberniteConf *kuberniteConfig.Config) error {
 		"kubernetes.io/change-cause",
 		fmt.Sprintf(
 			"kubernite handled %s event @ %s - commit hash %s",
-			time.Now().Format("Jan-02-2006 15:04:05"),
 			kuberniteConf.BuildEvent,
+			time.Now().Format("Jan-02-2006 15:04:05"),
 			latestCommitHash,
 		),
 	); err != nil {
@@ -151,8 +151,6 @@ func handleOtherEvent(kuberniteConf *kuberniteConfig.Config) error {
 		log.Fatal(err)
 	}
 
-	// write the deployment file
-
 	if kuberniteConf.DryRun {
 		log.Info(fmt.Sprintf("____%s event dry run____", kuberniteConf.BuildEvent))
 		log.Info(fmt.Sprintf("kubectl apply -f %s", kuberniteConf.KubernetesDeploymentFilePath))
@@ -162,6 +160,10 @@ func handleOtherEvent(kuberniteConf *kuberniteConfig.Config) error {
 		}
 		log.Info(fmt.Sprintf("\n%s", deploymentFileContents))
 		return nil
+	}
+
+	if err := deploymentFile.WriteAtPath("output.yaml"); err != nil {
+		log.Fatal("faile!", err)
 	}
 
 	return nil
