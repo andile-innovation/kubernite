@@ -65,8 +65,7 @@ func (d *Deployment) UpdatePodTemplateAnnotations(key, value string) error {
 		}
 	}
 
-	fmt.Println(annotationsSectionMap)
-
+	// update annotation
 	(*annotationsSectionMap)[key] = value
 
 	return nil
