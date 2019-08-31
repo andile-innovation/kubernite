@@ -3,7 +3,8 @@
 [![Build Status](https://cloud.drone.io/api/badges/andile-innovation/kubernite/status.svg)](https://cloud.drone.io/andile-innovation/kubernite)
 
 Kubernite is a Drone Plugin for Kubernetes written in golang using the official [client-go](https://github.com/kubernetes/client-go) kubernetes api client library.
-
+## Working Principle
+![working principle](https://github.com/andile-innovation/kubernite/blob/master/images/work_flow.png?raw=true)
 ## Example Usage
 
 ```yaml
