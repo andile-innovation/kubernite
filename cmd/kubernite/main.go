@@ -18,16 +18,9 @@ func main() {
 	}
 
 	// handle build event
-	var deploymentFile *kubernetesManifest.Deployment
-	switch kuberniteConf.BuildEvent {
-	case git.TagEvent:
-		if deploymentFile, err = handleTagEvent(kuberniteConf); err != nil {
-			log.Fatal(err)
-		}
-	default:
-		if deploymentFile, err = handleOtherEvent(kuberniteConf); err != nil {
-			log.Fatal(err)
-		}
+	deploymentFile, err := handleDeploymentForTagEvent(kuberniteConf)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	if kuberniteConf.DryRun {
@@ -35,11 +28,6 @@ func main() {
 		log.Info(fmt.Sprintf("kubectl apply -f %s", kuberniteConf.KubernetesDeploymentFilePath))
 		log.Info(fmt.Sprintf("\n%s", deploymentFile.String()))
 		return
-	}
-
-	// write file
-	if err := deploymentFile.WriteToYAMLAtPath("output.yaml"); err != nil {
-		log.Fatal(err)
 	}
 
 	// create a kubernetes client
@@ -53,9 +41,23 @@ func main() {
 	if _, err := deploymentClient.Update(deploymentFile.Deployment); err != nil {
 		log.Fatal(err)
 	}
+
+	// write file
+	if err := deploymentFile.WriteToYAMLAtPath("output.yaml"); err != nil {
+		log.Fatal(err)
+	}
 }
 
-func handleTagEvent(kuberniteConf *kuberniteConfig.Config) (*kubernetesManifest.Deployment, error) {
+func handleDeploymentForTagEvent(kuberniteConf *kuberniteConfig.Config) (*kubernetesManifest.Deployment, error) {
+	switch kuberniteConf.BuildEvent {
+	case git.TagEvent:
+		return updateDeploymentForTagEvent(kuberniteConf)
+	default:
+		return updateDeploymentForOtherEvent(kuberniteConf)
+	}
+}
+
+func updateDeploymentForTagEvent(kuberniteConf *kuberniteConfig.Config) (*kubernetesManifest.Deployment, error) {
 	// open git repository
 	gitRepo, err := git.NewRepositoryFromFilePath(kuberniteConf.DeploymentRepositoryPath)
 	if err != nil {
@@ -99,7 +101,7 @@ func handleTagEvent(kuberniteConf *kuberniteConfig.Config) (*kubernetesManifest.
 	return deploymentFile, nil
 }
 
-func handleOtherEvent(kuberniteConf *kuberniteConfig.Config) (*kubernetesManifest.Deployment, error) {
+func updateDeploymentForOtherEvent(kuberniteConf *kuberniteConfig.Config) (*kubernetesManifest.Deployment, error) {
 	// open git repository
 	gitRepo, err := git.NewRepositoryFromFilePath(kuberniteConf.DeploymentRepositoryPath)
 	if err != nil {
