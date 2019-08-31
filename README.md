@@ -1,5 +1,5 @@
 # kubernite
-![kubernite](https://raw.githubusercontent.com/andile-innovation/kubernite/master/kubernite.png)
+![kubernite](https://github.com/andile-innovation/kubernite/blob/master/images/kubernite.png?raw=true)
 
 [![Build Status](https://cloud.drone.io/api/badges/andile-innovation/kubernite/status.svg)](https://cloud.drone.io/andile-innovation/kubernite)
 
