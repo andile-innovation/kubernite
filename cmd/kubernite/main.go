@@ -23,6 +23,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// if this is a dry run, print out deployment file to be updated
 	if kuberniteConf.DryRun {
 		log.Info(fmt.Sprintf("____%s event dry run____", kuberniteConf.BuildEvent))
 		log.Info(fmt.Sprintf("kubectl apply -f %s", kuberniteConf.KubernetesDeploymentFilePath))
