@@ -18,7 +18,7 @@ func main() {
 	}
 
 	// handle build event
-	deploymentFile, err := handleDeploymentForTagEvent(kuberniteConf)
+	deploymentFile, err := handleDeployment(kuberniteConf)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,7 +49,7 @@ func main() {
 	}
 }
 
-func handleDeploymentForTagEvent(kuberniteConf *kuberniteConfig.Config) (*kubernetesManifest.Deployment, error) {
+func handleDeployment(kuberniteConf *kuberniteConfig.Config) (*kubernetesManifest.Deployment, error) {
 	switch kuberniteConf.BuildEvent {
 	case git.TagEvent:
 		return updateDeploymentForTagEvent(kuberniteConf)
