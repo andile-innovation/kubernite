@@ -14,17 +14,21 @@ To that end the plugin was developed with the following functionality:
 ### Elementary Example
 ```yaml
   - name: deploy
-    image: tbcloud/kubernite
+    image: tbcloud/kubernite:<version>
     settings:
+        # url for accessing the kubernetes server
         kubernetes_server:
           from_secret: kubernetes_server
+        # cluster ca certificate (for TLS)
         kubernetes_cert_data:
           from_secret: kubernetes_cert_data
+        # client ca certificate (for TLS)
         kubernetes_client_cert_data:
           from_secret: kubernetes_client_cert_data
+        # for cluster access
         kubernetes_client_key_data:
           from_secret: kubernetes_client_key_data
-        deployment_tag_repository_path: /drone/src
+        # path to deployment manifest file
         deployment_file_path: src/deployments/kubernetes/Deployment.yaml
 ```
 ## Working Principle
