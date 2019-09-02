@@ -12,7 +12,7 @@ func init() {
 	err = viper.BindEnv("KubernetesCertData", "PLUGIN_KUBERNETES_CERT_DATA")
 	err = viper.BindEnv("KubernetesClientCertData", "PLUGIN_KUBERNETES_CLIENT_CERT_DATA")
 	err = viper.BindEnv("KubernetesClientKeyData", "PLUGIN_KUBERNETES_CLIENT_KEY_DATA")
-	err = viper.BindEnv("KubernetesDeploymentFilePath", "PLUGIN_DEPLOYMENT_FILE_PATH")
+	err = viper.BindEnv("KubernetesDeploymentFilePath", "PLUGIN_KUBERNETES_DEPLOYMENT_FILE_PATH")
 	err = viper.BindEnv("DeploymentTagRepositoryPath", "PLUGIN_DEPLOYMENT_TAG_REPOSITORY_PATH")
 	err = viper.BindEnv("DeploymentImageName", "PLUGIN_DEPLOYMENT_IMAGE_NAME")
 	err = viper.BindEnv("DryRun", "PLUGIN_DRY_RUN")

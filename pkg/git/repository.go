@@ -24,16 +24,16 @@ type Repository struct {
 
 func NewRepositoryFromFilePath(pathToRepository string) (*Repository, error) {
 	// validate given repository path
+	if pathToRepository == "" {
+		return nil, ErrOpeningRepository{Reasons: []string{
+			"given path to repository is blank",
+		}}
+	}
 	pathToRepository, err := filepath.Abs(pathToRepository)
 	if err != nil {
 		return nil, ErrOpeningRepository{Reasons: []string{
 			"getting absolute path",
 			err.Error(),
-		}}
-	}
-	if pathToRepository == "" {
-		return nil, ErrOpeningRepository{Reasons: []string{
-			"given path to repository is blank",
 		}}
 	}
 	repositoryFileInfo, err := os.Stat(pathToRepository)

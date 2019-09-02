@@ -60,7 +60,7 @@ func handleDeployment(kuberniteConf *kuberniteConfig.Config) (*kubernetesManifes
 
 func updateDeploymentForTagEvent(kuberniteConf *kuberniteConfig.Config) (*kubernetesManifest.Deployment, error) {
 	// open git repository
-	gitRepo, err := git.NewRepositoryFromFilePath(kuberniteConf.DeploymentRepositoryPath)
+	gitRepo, err := git.NewRepositoryFromFilePath(kuberniteConf.DeploymentFileRepositoryPath)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func updateDeploymentForTagEvent(kuberniteConf *kuberniteConfig.Config) (*kubern
 
 func updateDeploymentForOtherEvent(kuberniteConf *kuberniteConfig.Config) (*kubernetesManifest.Deployment, error) {
 	// open git repository
-	gitRepo, err := git.NewRepositoryFromFilePath(kuberniteConf.DeploymentRepositoryPath)
+	gitRepo, err := git.NewRepositoryFromFilePath(kuberniteConf.DeploymentFileRepositoryPath)
 	if err != nil {
 		log.Fatal(err)
 	}
