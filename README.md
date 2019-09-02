@@ -35,9 +35,9 @@ To that end the plugin was developed with the following functionality:
 |Setting|Description|
 |---|---|
 |kubernetes_server|URL of kubernetes server. Can be found in the kube config at key 'cluster.server'. The kube config can typcially be found at **$USER/.kube/config** or by running **kubectl config view**.|
-|kubernetes_cert_data|Root certificate used to verify the certificate presented by the API server when [transport security](https://kubernetes.io/docs/reference/access-authn-authz/controlling-access/#transport-security) is being established. Can be found in the kube config at key 'certificate-authority-data'. The kube config can typcially be found at **$USER/.kube/config**.|
-|kubernetes_client_cert_data||
-|kubernetes_client_key_data||
+|kubernetes_cert_data|Root certificate used to verify the certificate presented by the API server when [transport security](https://kubernetes.io/docs/reference/access-authn-authz/controlling-access/#transport-security) is being established. Can be found in the kube config at key 'cluster.certificate-authority-data'. The kube config can typcially be found at **$USER/.kube/config**.|
+|kubernetes_client_key_data|Private key data for client X509 certificate. Used in authentication process. See [authenticating with X509 Client Certs](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#x509-client-certs), and  [generating certificates](https://kubernetes.io/docs/concepts/cluster-administration/certificates/). Can be found in the kube config at key 'user.client-key-data'. The kube config can typcially be found at **$USER/.kube/config**. Note that if you are using a hosted service such as [Digital Ocean KaaS](https://www.digitalocean.com/docs/kubernetes/how-to/connect-to-cluster/#download-the-configuration-file) you may need to download your config file from them to get access to this data.|
+|kubernetes_client_cert_data|Public client certificate data for client X509 certificate. Used in authentication process. See [authenticating with X509 Client Certs](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#x509-client-certs), and  [generating certificates](https://kubernetes.io/docs/concepts/cluster-administration/certificates/). Can be found in the kube config at key 'user.client-key-data'. The kube config can typcially be found at **$USER/.kube/config**. Note that if you are using a hosted service such as [Digital Ocean KaaS](https://www.digitalocean.com/docs/kubernetes/how-to/connect-to-cluster/#download-the-configuration-file) you may need to download your config file from them to get access to this data.|
 |deployment_file_path||
 |deployment_tag_repository_path||
 |dry_run||
@@ -48,3 +48,5 @@ To that end the plugin was developed with the following functionality:
 ## FAQ
 ## Credits
 - [drone-kubernetes](https://github.com/honestbee/drone-kubernetes) by the [honestbee](https://github.com/honestbee)
+## TODO
+- add support for other client authentication methods
