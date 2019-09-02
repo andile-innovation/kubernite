@@ -31,6 +31,18 @@ To that end the plugin was developed with the following functionality:
         # path to deployment manifest file
         deployment_file_path: src/deployments/kubernetes/Deployment.yaml
 ```
+### Plugin Settings 
+|Setting|Description|
+|---|---|
+|kubernetes_server|URL of kubernetes server. Can be found in the kube config at key 'cluster.server'. The kube config can typcially be found at **$USER/.kube/config** or by running **kubectl config view**.|
+|kubernetes_cert_data|Root certificate used to verify the certificate presented by the API server when [transport security](https://kubernetes.io/docs/reference/access-authn-authz/controlling-access/#transport-security) is being established. Can be found in the kube config at key 'certificate-authority-data'. The kube config can typcially be found at **$USER/.kube/config**.|
+|kubernetes_client_cert_data||
+|kubernetes_client_key_data||
+|deployment_file_path||
+|deployment_tag_repository_path||
+|dry_run||
+|commit_deployment||
+|deployment_file_repository_path||
 ## Working Principle
 ![working principle](https://github.com/andile-innovation/kubernite/blob/master/images/work_flow.png?raw=true)
 ## FAQ
