@@ -8,18 +8,17 @@ import (
 )
 
 func init() {
-	err := viper.BindEnv("DeploymentTagRepositoryPath", "PLUGIN_DEPLOYMENT_TAG_REPOSITORY_PATH")
-	err = viper.BindEnv("KubernetesDeploymentFilePath", "PLUGIN_KUBERNETES_DEPLOYMENT_FILE_PATH")
-	err = viper.BindEnv("KubernetesServer", "PLUGIN_KUBERNETES_SERVER")
+	err := viper.BindEnv("KubernetesServer", "PLUGIN_KUBERNETES_SERVER")
 	err = viper.BindEnv("KubernetesCertData", "PLUGIN_KUBERNETES_CERT_DATA")
 	err = viper.BindEnv("KubernetesClientCertData", "PLUGIN_KUBERNETES_CLIENT_CERT_DATA")
 	err = viper.BindEnv("KubernetesClientKeyData", "PLUGIN_KUBERNETES_CLIENT_KEY_DATA")
-	err = viper.BindEnv("BuildEvent", "DRONE_BUILD_EVENT")
+	err = viper.BindEnv("KubernetesDeploymentFilePath", "PLUGIN_DEPLOYMENT_FILE_PATH")
+	err = viper.BindEnv("DeploymentTagRepositoryPath", "PLUGIN_DEPLOYMENT_TAG_REPOSITORY_PATH")
+	err = viper.BindEnv("DeploymentTagRepositoryPath", "PLUGIN_DEPLOYMENT_IMAGE_NAME")
 	err = viper.BindEnv("DryRun", "PLUGIN_DRY_RUN")
-	//deployment_file_path
-	//deployment_image_name
-	//deployment_file_repository_path
-	//commit_deployment
+	err = viper.BindEnv("DeploymentTagRepositoryPath", "PLUGIN_DEPLOYMENT_FILE_REPOSITORY_PATH")
+	err = viper.BindEnv("DryRun", "PLUGIN_COMMIT_DEPLOYMENT")
+	err = viper.BindEnv("BuildEvent", "DRONE_BUILD_EVENT")
 	if err != nil {
 		err = ErrPackageInitialisation{Reasons: []string{
 			"binding viper keys to environment variables",
