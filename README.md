@@ -8,7 +8,7 @@ Kubernite is a [Drone](https://drone.io/) Plugin for Kubernetes written in golan
 Kubernite was built out of a desire to achieve complete automation of the deployment stage of the development cycle of an application running in a kubernetes cluster.
 To that end the plugin was developed with the following functionality:
 1. trigger the redeployment of an *existing* deployment in a kubernetes cluster with consistent and traceable [kubernetes.io/change-cause](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#checking-rollout-history-of-a-deployment) annotations
-2. update the deployment manifest file and commit the changes to source control to keep the state of the deployment in the cluster in sync with the manifest files which describe it. (This is to keep with the [Declarative Management of Kubernetes Objects](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/declarative-config/) Using Configuration Files)
+2. update the deployment manifest file and commit the changes to source control to keep the state of the deployment in the cluster in sync with the manifest files which describe it. (This is to keep with [Declarative Management of Kubernetes Objects](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/declarative-config/))
    - see [object management techniques](https://kubernetes.io/docs/concepts/overview/working-with-objects/object-management/) 
 ## Usage
 ### Elementary Example
