@@ -16,4 +16,4 @@ trigger:
   branch:
     - master
   event:
-    - push
+    - tag
