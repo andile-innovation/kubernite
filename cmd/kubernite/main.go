@@ -17,6 +17,21 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// TODO remove these
+	log.Info("====")
+	log.Info(kuberniteConf.KubernetesServer)
+	log.Info(kuberniteConf.KubernetesCertData)
+	log.Info(kuberniteConf.KubernetesClientCertData)
+	log.Info(kuberniteConf.KubernetesClientKeyData)
+	log.Info(kuberniteConf.KubernetesDeploymentFilePath)
+	log.Info(kuberniteConf.DeploymentTagRepositoryPath)
+	log.Info(kuberniteConf.DeploymentImageName)
+	log.Info(kuberniteConf.DryRun)
+	log.Info(kuberniteConf.DeploymentFileRepositoryPath)
+	log.Info(kuberniteConf.CommitDeployment)
+	log.Info(kuberniteConf.BuildEvent)
+	log.Info("====")
+
 	// handle build event
 	deploymentFile, err := handleDeployment(kuberniteConf)
 	if err != nil {
@@ -113,6 +128,14 @@ func updateDeploymentForTagEvent(kuberniteConf *kuberniteConfig.Config) (*kubern
 			"kubernite handled tag event @ %s - image updated to %s",
 			time.Now().Format("Jan-02-2006 15:04:05"),
 			latestTag,
+		),
+	); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := deploymentFile.UpdateImageTag(kuberniteConf.DeploymentImageName,
+		fmt.Sprintf(
+			"%s:%s", kuberniteConf.DeploymentImageName, latestTag,
 		),
 	); err != nil {
 		log.Fatal(err)

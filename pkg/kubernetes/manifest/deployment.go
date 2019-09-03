@@ -93,6 +93,15 @@ func (d *Deployment) UpdatePodTemplateAnnotations(key, value string) error {
 	return nil
 }
 
+func (d *Deployment) UpdateImageTag(deploymentImageName, value string) error {
+	for i, c := range d.Spec.Template.Spec.Containers {
+		if c.Name == deploymentImageName {
+			d.Spec.Template.Spec.Containers[i].Image = value
+		}
+	}
+	return nil
+}
+
 /*
 WriteToYAML writes the manifest file to disk at it's original filepath
 */
