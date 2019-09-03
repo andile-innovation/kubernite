@@ -93,10 +93,23 @@ func (d *Deployment) UpdatePodTemplateAnnotations(key, value string) error {
 	return nil
 }
 
-func (d *Deployment) UpdateImageTag(deploymentImageName, value string) error {
+func (d *Deployment) UpdateImageTag(deploymentImageName, latestTag string) error {
+	if len(d.Spec.Template.Spec.Containers) == 1 {
+		containerImage := d.Spec.Template.Spec.Containers[0].Image
+		if deploymentImageName == "" {
+			deploymentImageName = containerImage[:strings.IndexByte(containerImage, ':')]
+		}
+		d.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s",deploymentImageName,latestTag)
+		return nil
+	}
+
+	if deploymentImageName == "" {
+		return ErrImageNotSpecified{}
+	}
+
 	for i, c := range d.Spec.Template.Spec.Containers {
-		if c.Name == deploymentImageName {
-			d.Spec.Template.Spec.Containers[i].Image = value
+		if c.Image == deploymentImageName {
+			d.Spec.Template.Spec.Containers[i].Image = latestTag
 		}
 	}
 	return nil

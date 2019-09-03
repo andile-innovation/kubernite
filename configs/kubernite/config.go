@@ -29,24 +29,31 @@ func init() {
 }
 
 type Config struct {
-	KubernetesServer             string `validate:"required"`
-	KubernetesCertData           string `validate:"required"`
-	KubernetesClientCertData     string `validate:"required"`
-	KubernetesClientKeyData      string `validate:"required"`
-	KubernetesDeploymentFilePath string `validate:"required"`
-	DeploymentTagRepositoryPath  string `validate:"required"`
-	DeploymentImageName          string `validate:"required"`
+	//// TODO insert again these add `validate:"required"` to top 5!!
+	KubernetesServer             string
+	KubernetesCertData           string
+	KubernetesClientCertData     string
+	KubernetesClientKeyData      string
+	KubernetesDeploymentFilePath string
+	DeploymentTagRepositoryPath  string
+	DeploymentImageName          string
 	DryRun                       bool
-	DeploymentFileRepositoryPath string `validate:"required"`
+	DeploymentFileRepositoryPath string
 	CommitDeployment             bool
 	BuildEvent                   git.Event `validate:"required"`
 }
 
 func GetConfig() (*Config, error) {
 	// set default configuration
-	viper.SetDefault("DeploymentTagRepositoryPath", "/drone/src")
-	viper.SetDefault("DryRun", false)
+	//viper.SetDefault("DeploymentTagRepositoryPath", "/drone/src") TODO - add again
+	//viper.SetDefault("DryRun", false) TODO - add again
 	viper.SetDefault("CommitDeployment", false)
+
+	// TODO remove
+	viper.SetDefault("BuildEvent", "push")
+	viper.SetDefault("DeploymentTagRepositoryPath", "/Users/Lawrence/go/src/github.com/andile-innovation/james")
+	viper.SetDefault("KubernetesDeploymentFilePath", "/Users/Lawrence/go/src/github.com/andile-innovation/konductor/manifests/dev/james/deployment.yaml")
+	viper.SetDefault("DryRun", true)
 
 	// parse the config from environment
 	conf := new(Config)
@@ -54,6 +61,7 @@ func GetConfig() (*Config, error) {
 		return nil, err
 	}
 
+	//// TODO insert again these
 	// validate the configuration
 	if err := validator.New().Struct(conf); err != nil {
 		return nil, ErrInvalidConfig{Reasons: []string{err.Error()}}

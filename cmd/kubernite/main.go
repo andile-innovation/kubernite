@@ -133,11 +133,7 @@ func updateDeploymentForTagEvent(kuberniteConf *kuberniteConfig.Config) (*kubern
 		log.Fatal(err)
 	}
 
-	if err := deploymentFile.UpdateImageTag(kuberniteConf.DeploymentImageName,
-		fmt.Sprintf(
-			"%s:%s", kuberniteConf.DeploymentImageName, latestTag,
-		),
-	); err != nil {
+	if err := deploymentFile.UpdateImageTag(kuberniteConf.DeploymentImageName, latestTag); err != nil {
 		log.Fatal(err)
 	}
 
@@ -185,6 +181,9 @@ func updateDeploymentForOtherEvent(kuberniteConf *kuberniteConfig.Config) (*kube
 		),
 	); err != nil {
 		return nil, err
+	}
+	if err := deploymentFile.UpdateImageTag(kuberniteConf.DeploymentImageName, "latest"); err != nil {
+		log.Fatal(err)
 	}
 
 	return deploymentFile, nil

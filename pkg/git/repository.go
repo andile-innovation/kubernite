@@ -127,10 +127,13 @@ func (r *Repository) CommitDeployment(pathToDeploymentFile string) error {
 	// get worktree
 	w, err := r.Worktree()
 	if err != nil {
-		return err
+		return ErrGeneratingWorkTree{}
 	}
 	// git add deploymentFile
 	_, err = w.Add(pathToDeploymentFile)
+	if err != nil {
+		return ErrGitAdd{}
+	}
 
 	_, err = w.Commit("Kubernite deployment", &goGit.CommitOptions{
 		Author: &object.Signature{
@@ -141,7 +144,7 @@ func (r *Repository) CommitDeployment(pathToDeploymentFile string) error {
 	})
 
 	if err != nil {
-		return err
+		return ErrGitCommit{}
 	}
 
 	err = r.Push(&goGit.PushOptions{
@@ -153,7 +156,7 @@ func (r *Repository) CommitDeployment(pathToDeploymentFile string) error {
 	})
 
 	if err != nil {
-		return err
+		return ErrGitPush{}
 	}
 
 	return nil

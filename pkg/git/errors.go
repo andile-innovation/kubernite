@@ -31,3 +31,27 @@ type ErrNoTags struct{}
 func (e ErrNoTags) Error() string {
 	return "no tags"
 }
+
+type ErrGeneratingWorkTree struct{}
+
+func (e ErrGeneratingWorkTree) Error() string {
+	return "error generating git repo worktree"
+}
+
+type ErrGitAdd struct{}
+
+func (e ErrGitAdd) Error() string {
+	return "git add error"
+}
+
+type ErrGitCommit struct{}
+
+func (e ErrGitCommit) Error() string {
+	return "git commit error"
+}
+
+type ErrGitPush struct{}
+
+func (e ErrGitPush) Error() string {
+	return "git push error"
+}
