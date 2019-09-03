@@ -60,3 +60,10 @@ type ErrImageNotSpecified struct {}
 func (e ErrImageNotSpecified) Error() string {
 	return fmt.Sprintf("more than one container in a pod and image name is not specified")
 }
+
+type ErrSuppliedImageNameNotInConfigFile struct {}
+
+func (e ErrSuppliedImageNameNotInConfigFile) Error() string {
+	return fmt.Sprintf("the supplied image name is not in the config file")
+}
+

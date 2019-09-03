@@ -54,6 +54,7 @@ func GetConfig() (*Config, error) {
 	viper.SetDefault("DeploymentTagRepositoryPath", "/Users/Lawrence/go/src/github.com/andile-innovation/james")
 	viper.SetDefault("KubernetesDeploymentFilePath", "/Users/Lawrence/go/src/github.com/andile-innovation/konductor/manifests/dev/james/deployment.yaml")
 	viper.SetDefault("DryRun", true)
+	//viper.SetDefault("DeploymentImageName", "tbcloud/james")
 
 	// parse the config from environment
 	conf := new(Config)

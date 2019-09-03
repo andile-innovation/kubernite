@@ -98,6 +98,10 @@ func (d *Deployment) UpdateImageTag(deploymentImageName, latestTag string) error
 		containerImage := d.Spec.Template.Spec.Containers[0].Image
 		if deploymentImageName == "" {
 			deploymentImageName = containerImage[:strings.IndexByte(containerImage, ':')]
+		} else {
+			if deploymentImageName != containerImage[:strings.IndexByte(containerImage, ':')] {
+				return ErrSuppliedImageNameNotInConfigFile{}
+			}
 		}
 		d.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s",deploymentImageName,latestTag)
 		return nil
@@ -108,11 +112,12 @@ func (d *Deployment) UpdateImageTag(deploymentImageName, latestTag string) error
 	}
 
 	for i, c := range d.Spec.Template.Spec.Containers {
-		if c.Image == deploymentImageName {
-			d.Spec.Template.Spec.Containers[i].Image = latestTag
+		if c.Image[:strings.IndexByte(c.Image, ':')] == deploymentImageName {
+			d.Spec.Template.Spec.Containers[i].Image = fmt.Sprintf("%s:%s",deploymentImageName,latestTag)
+			return nil
 		}
 	}
-	return nil
+	return ErrSuppliedImageNameNotInConfigFile{}
 }
 
 /*
