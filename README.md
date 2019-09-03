@@ -25,23 +25,18 @@ Various established drone plugins already exist to cater for [i.] in each of the
   - name: deploy
     image: tbcloud/kubernite:<version>
     settings:
-        # url for accessing the kubernetes server
         kubernetes_server:
           from_secret: kubernetes_server
-        # cluster ca certificate (for TLS)
         kubernetes_cert_data:
           from_secret: kubernetes_cert_data
-        # client ca certificate (for TLS)
         kubernetes_client_cert_data:
           from_secret: kubernetes_client_cert_data
-        # for cluster access
         kubernetes_client_key_data:
           from_secret: kubernetes_client_key_data
-        # path to deployment manifest file
         deployment_file_path: src/deployments/kubernetes/Deployment.yaml
 ```
 See [additional examples](#additional-examples).
-
+See [plugin settings](#plugin-settings).
 See [drone secrets](https://readme.drone.io/configure/secrets/).
 ### Plugin Settings 
 |Setting|Description|
@@ -64,7 +59,105 @@ This behaviour and the logic around it is illustrated in the following diagram. 
 
 ![working principle](https://github.com/andile-innovation/kubernite/blob/master/images/work_flow.png?raw=true)
 ## Additional Examples
-### 
+### Handle 'Tag' and 'Other' events differently
+This example demonstrates the following:
+1. specifying a workspace structure which changes the location into which drone clones the repository that triggers the pipeline
+2. declaring a volume to share files between build stages
+3. building a node project (this particular example considers a react project)
+4. using [drone-docker](https://github.com/drone-plugins/drone-docker) to build and push an image to dockerhub
+5. using docker:git to clone a kubernetes infrastructure repository
+```yaml
+kind: pipeline
+name: default
+
+# [1.] specify work space structure
+# results in the following:
+# ├── projects
+#       └── foo <-- drone clones repository here, this is default working directory
+workspace:
+  base: /projects
+  path: foo
+
+# [2.] volume to share files between steps
+volumes:
+  - name: shared_volume
+    temp: {}
+
+steps:
+  # [3.] build foo project
+  - name: build foo
+    image: node
+    commands:
+      - yarn install
+      - yarn build
+  
+  # [4.] build and deploy foo image
+  - name: build & deploy image
+    image: plugins/docker
+    settings:
+      repo: fooOwner/foo
+      auto_tag: true
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      dockerfile: /projects/foo/Dockerfile
+      context: /projects/foo/build
+
+  # [5.] clone infrastructure repository
+  # results in the following:
+  # ├── projects
+  #       └── foo <-- drone clones repository here, this is default working directory
+  #       └── infrastructure <-- this stage creates this from cloning
+  - name: clone infrastucture
+    image: docker:git
+    volumes:
+      - name: shard_volume
+        path: /projects/infrastructure
+    commands:
+      - cd /projects
+      - git clone https://github.com/fooOwner/infrastructure.git
+
+  # this stage will run only with tag events 
+  - name: deploy on tag
+    image: tbcloud/kubernite:<version>
+    settings:
+        kubernetes_server:
+          from_secret: kubernetes_server
+        kubernetes_cert_data:
+          from_secret: kubernetes_cert_data
+        kubernetes_client_cert_data:
+          from_secret: kubernetes_client_cert_data
+        kubernetes_client_key_data:
+          from_secret: kubernetes_client_key_data
+        deployment_file_path: src/deployments/kubernetes/Deployment.yaml
+        commit_deployment: true
+        deployment_file_repository_path: /drone/src
+    when:
+      event:
+        - tag
+
+  # this stage will run on all events other than tag
+  - name: deploy on other
+    image: tbcloud/kubernite:<version>
+    settings:
+        kubernetes_server:
+          from_secret: kubernetes_server
+        kubernetes_cert_data:
+          from_secret: kubernetes_cert_data
+        kubernetes_client_cert_data:
+          from_secret: kubernetes_client_cert_data
+        kubernetes_client_key_data:
+          from_secret: kubernetes_client_key_data
+        deployment_file_path: src/deployments/kubernetes/Deployment.yaml
+    when:
+      event:
+        exclude:
+          - tag
+```
+Notes:
+- see [drone triggers](https://docker-runner.docs.drone.io/configuration/trigger/)
+- 
 ## FAQ
 ## Credits
 - [drone-kubernetes](https://github.com/honestbee/drone-kubernetes) by the [honestbee](https://github.com/honestbee)
