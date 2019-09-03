@@ -66,6 +66,8 @@ This example demonstrates the following:
 3. building a node project (this particular example considers a react project)
 4. using [drone-docker](https://github.com/drone-plugins/drone-docker) to build and push an image to dockerhub
 5. using docker:git to clone a kubernetes infrastructure repository
+6. for tag events: redeploy and commit and push updated deployment file to infrastructure repository
+7. for other events: redeploy 
 ```yaml
 kind: pipeline
 name: default
@@ -118,7 +120,7 @@ steps:
       - cd /projects
       - git clone https://github.com/fooOwner/infrastructure.git
 
-  # this stage will run only with tag events 
+  # [6.] this stage will run only with tag events 
   - name: deploy on tag
     image: tbcloud/kubernite:<version>
     settings:
@@ -130,14 +132,14 @@ steps:
           from_secret: kubernetes_client_cert_data
         kubernetes_client_key_data:
           from_secret: kubernetes_client_key_data
-        deployment_file_path: src/deployments/kubernetes/Deployment.yaml
+        deployment_file_path: /projects/infrastructure/Deployment.yaml
         commit_deployment: true
-        deployment_file_repository_path: /drone/src
+        deployment_file_repository_path: /projects/infrastructure
     when:
       event:
         - tag
 
-  # this stage will run on all events other than tag
+  # [7.] this stage will run only with tag events
   - name: deploy on other
     image: tbcloud/kubernite:<version>
     settings:
@@ -149,16 +151,15 @@ steps:
           from_secret: kubernetes_client_cert_data
         kubernetes_client_key_data:
           from_secret: kubernetes_client_key_data
-        deployment_file_path: src/deployments/kubernetes/Deployment.yaml
+        deployment_file_path: /projects/infrastructure/Deployment.yaml
     when:
       event:
         exclude:
           - tag
 ```
-Notes:
-- see [drone triggers](https://docker-runner.docs.drone.io/configuration/trigger/)
-- 
+See [drone triggers](https://docker-runner.docs.drone.io/configuration/trigger/)
 ## FAQ
+- Why/what kind of tags are used?
 ## Credits
 - [drone-kubernetes](https://github.com/honestbee/drone-kubernetes) by the [honestbee](https://github.com/honestbee)
 ## TODO
