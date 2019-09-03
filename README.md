@@ -74,15 +74,16 @@ name: default
 
 # [1.] specify work space structure
 # results in the following:
-# ├── projects
+# ├── repositories
 #       └── foo <-- drone clones repository here, this is default working directory
 workspace:
-  base: /projects
+  base: /repositories
   path: foo
 
-# [2.] volume to share files between steps
+# [2.] volume to share files between steps, this will be used to share the infrastructure 
+# files between steps that is outside of the persisted /repositories/foo volume
 volumes:
-  - name: shared_volume
+  - name: infrastructure_volume
     temp: {}
 
 steps:
@@ -114,7 +115,7 @@ steps:
   - name: clone infrastucture
     image: docker:git
     volumes:
-      - name: shard_volume
+      - name: infrastructure_volume
         path: /projects/infrastructure
     commands:
       - cd /projects
@@ -123,6 +124,9 @@ steps:
   # [6.] this stage will run only with tag events 
   - name: deploy on tag
     image: tbcloud/kubernite:<version>
+    volumes:
+      - name: infrastructure_volume
+        path: /projects/infrastructure
     settings:
         kubernetes_server:
           from_secret: kubernetes_server
@@ -142,6 +146,9 @@ steps:
   # [7.] this stage will run only with tag events
   - name: deploy on other
     image: tbcloud/kubernite:<version>
+    volumes:
+      - name: infrastructure_volume
+        path: /projects/infrastructure
     settings:
         kubernetes_server:
           from_secret: kubernetes_server
