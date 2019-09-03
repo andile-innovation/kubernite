@@ -43,6 +43,11 @@ type Config struct {
 }
 
 func GetConfig() (*Config, error) {
+	// set default configuration
+	viper.SetDefault("DeploymentTagRepositoryPath", "/drone/src")
+	viper.SetDefault("DryRun", false)
+	viper.SetDefault("CommitDeployment", false)
+
 	// parse the config from environment
 	conf := new(Config)
 	if err := viper.Unmarshal(&conf); err != nil {
