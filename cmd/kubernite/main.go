@@ -47,6 +47,25 @@ func main() {
 	if err := deploymentFile.WriteToYAMLAtPath("output.yaml"); err != nil {
 		log.Fatal(err)
 	}
+
+	//commit deployment if set
+	if kuberniteConf.CommitDeployment {
+		if err := commitDeployment(kuberniteConf); err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
+func commitDeployment(kuberniteConf *kuberniteConfig.Config) error {
+	gitRepo, err := git.NewRepositoryFromFilePath(kuberniteConf.DeploymentFileRepositoryPath)
+	if err != nil {
+		return err
+	}
+	err = gitRepo.CommitDeployment(kuberniteConf.KubernetesDeploymentFilePath)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func handleDeployment(kuberniteConf *kuberniteConfig.Config) (*kubernetesManifest.Deployment, error) {
@@ -60,7 +79,7 @@ func handleDeployment(kuberniteConf *kuberniteConfig.Config) (*kubernetesManifes
 
 func updateDeploymentForTagEvent(kuberniteConf *kuberniteConfig.Config) (*kubernetesManifest.Deployment, error) {
 	// open git repository
-	gitRepo, err := git.NewRepositoryFromFilePath(kuberniteConf.DeploymentFileRepositoryPath)
+	gitRepo, err := git.NewRepositoryFromFilePath(kuberniteConf.DeploymentTagRepositoryPath)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +123,7 @@ func updateDeploymentForTagEvent(kuberniteConf *kuberniteConfig.Config) (*kubern
 
 func updateDeploymentForOtherEvent(kuberniteConf *kuberniteConfig.Config) (*kubernetesManifest.Deployment, error) {
 	// open git repository
-	gitRepo, err := git.NewRepositoryFromFilePath(kuberniteConf.DeploymentFileRepositoryPath)
+	gitRepo, err := git.NewRepositoryFromFilePath(kuberniteConf.DeploymentTagRepositoryPath)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 type Event string
@@ -120,4 +121,40 @@ func (r *Repository) GetLatestCommit() (*object.Commit, error) {
 		}}
 	}
 	return commit, nil
+}
+
+func (r *Repository) CommitDeployment(pathToDeploymentFile string) error {
+	// get worktree
+	w, err := r.Worktree()
+	if err != nil {
+		return err
+	}
+	// git add deploymentFile
+	_, err = w.Add(pathToDeploymentFile)
+
+	_, err = w.Commit("Kubernite deployment", &goGit.CommitOptions{
+		Author: &object.Signature{
+			Name:  "Kubernite",
+			Email: "-",
+			When:  time.Now(),
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	err = r.Push(&goGit.PushOptions{
+		RemoteName: "",
+		RefSpecs:   nil,
+		Auth:       nil,
+		Progress:   nil,
+		Prune:      false,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
