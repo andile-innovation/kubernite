@@ -61,7 +61,7 @@ func commitDeployment(kuberniteConf *kuberniteConfig.Config) error {
 	if err != nil {
 		return err
 	}
-	err = gitRepo.CommitDeployment(kuberniteConf.DeploymentFileRepositoryPath, kuberniteConf.DeploymentFilePath)
+	err = gitRepo.CommitDeployment(kuberniteConf.DeploymentFileRepositoryPath, kuberniteConf.DeploymentFilePath, kuberniteConf.GitUsername, kuberniteConf.GitPassword)
 	if err != nil {
 		return err
 	}

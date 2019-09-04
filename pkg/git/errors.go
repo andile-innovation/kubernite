@@ -37,7 +37,7 @@ type ErrGeneratingWorkTree struct{
 }
 
 func (e ErrGeneratingWorkTree) Error() string {
-	return "error generating git repo worktree" + strings.Join(e.Reasons, ", ")
+	return "error generating git repo worktree: " + strings.Join(e.Reasons, ", ")
 }
 
 type ErrGitAdd struct{
@@ -45,7 +45,7 @@ type ErrGitAdd struct{
 }
 
 func (e ErrGitAdd) Error() string {
-	return "git add error" + strings.Join(e.Reasons, ", ")
+	return "git add error: " + strings.Join(e.Reasons, ", ")
 }
 
 type ErrGitCommit struct{
@@ -53,7 +53,7 @@ type ErrGitCommit struct{
 }
 
 func (e ErrGitCommit) Error() string {
-	return "git commit error" + strings.Join(e.Reasons, ", ")
+	return "git commit error: " + strings.Join(e.Reasons, ", ")
 }
 
 type ErrGitPush struct{
@@ -61,7 +61,7 @@ type ErrGitPush struct{
 }
 
 func (e ErrGitPush) Error() string {
-	return "git push error" + strings.Join(e.Reasons, ", ")
+	return "git push error: " + strings.Join(e.Reasons, ", ")
 }
 
 type ErrGeneratingRelFilePath struct{
@@ -69,5 +69,5 @@ type ErrGeneratingRelFilePath struct{
 }
 
 func (e ErrGeneratingRelFilePath) Error() string {
-	return "error generating relative file path" + strings.Join(e.Reasons, ", ")
+	return "error generating relative file path: " + strings.Join(e.Reasons, ", ")
 }

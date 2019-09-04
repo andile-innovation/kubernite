@@ -5,6 +5,7 @@ import (
 	goGit "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 	"io"
 	"os"
 	"path/filepath"
@@ -123,7 +124,7 @@ func (r *Repository) GetLatestCommit() (*object.Commit, error) {
 	return commit, nil
 }
 
-func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, KubernetesDeploymentFilePath string) error {
+func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, DeploymentFilePath, GitUsername, GitPassword string) error {
 	// get worktree
 	w, err := r.Worktree()
 	if err != nil {
@@ -135,7 +136,7 @@ func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, KubernetesDe
 		}
 	}
 
-	fileRelToRepo, err := filepath.Rel(DeploymentFileRepositoryPath, KubernetesDeploymentFilePath)
+	fileRelToRepo, err := filepath.Rel(DeploymentFileRepositoryPath, DeploymentFilePath)
 	if err != nil {
 		return ErrGeneratingRelFilePath{
 			Reasons: []string{
@@ -170,7 +171,16 @@ func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, KubernetesDe
 	}
 
 	// git push kubernite deployment
-	if err := r.Push(&goGit.PushOptions{}); err != nil {
+	if err := r.Push(&goGit.PushOptions{
+		RemoteName: "origin",
+		RefSpecs:   nil,
+		Auth: &http.BasicAuth{
+			Username: GitUsername,
+			Password: GitPassword,
+		},
+		Progress: nil,
+		Prune:    false,
+	}); err != nil {
 		return ErrGitPush{
 			Reasons: []string{
 				"git push deployment",

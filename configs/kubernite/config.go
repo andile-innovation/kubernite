@@ -19,6 +19,8 @@ func init() {
 	err = viper.BindEnv("DeploymentFileRepositoryPath", "PLUGIN_DEPLOYMENT_FILE_REPOSITORY_PATH")
 	err = viper.BindEnv("CommitDeployment", "PLUGIN_COMMIT_DEPLOYMENT")
 	err = viper.BindEnv("BuildEvent", "DRONE_BUILD_EVENT")
+	err = viper.BindEnv("GitUsername", "PLUGIN_GIT_USERNAME")
+	err = viper.BindEnv("GitPassword", "PLUGIN_GIT_PASSWORD")
 	if err != nil {
 		err = ErrPackageInitialisation{Reasons: []string{
 			"binding viper keys to environment variables",
@@ -40,6 +42,8 @@ type Config struct {
 	DeploymentFileRepositoryPath string
 	CommitDeployment             bool
 	BuildEvent                   git.Event `validate:"required"`
+	GitPassword                  string
+	GitUsername                  string
 }
 
 func GetConfig() (*Config, error) {
