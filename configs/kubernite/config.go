@@ -8,14 +8,17 @@ import (
 )
 
 func init() {
-	err := viper.BindEnv("DeploymentRepositoryPath", "PLUGIN_DEPLOYMENT_REPOSITORY_PATH")
-	err = viper.BindEnv("KubernetesDeploymentFilePath", "PLUGIN_KUBERNETES_DEPLOYMENT_FILE_PATH")
-	err = viper.BindEnv("KubernetesServer", "PLUGIN_KUBERNETES_SERVER")
+	err := viper.BindEnv("KubernetesServer", "PLUGIN_KUBERNETES_SERVER")
 	err = viper.BindEnv("KubernetesCertData", "PLUGIN_KUBERNETES_CERT_DATA")
 	err = viper.BindEnv("KubernetesClientCertData", "PLUGIN_KUBERNETES_CLIENT_CERT_DATA")
 	err = viper.BindEnv("KubernetesClientKeyData", "PLUGIN_KUBERNETES_CLIENT_KEY_DATA")
-	err = viper.BindEnv("BuildEvent", "DRONE_BUILD_EVENT")
+	err = viper.BindEnv("DeploymentFilePath", "PLUGIN_DEPLOYMENT_FILE_PATH")
+	err = viper.BindEnv("DeploymentTagRepositoryPath", "PLUGIN_DEPLOYMENT_TAG_REPOSITORY_PATH")
+	err = viper.BindEnv("DeploymentImageName", "PLUGIN_DEPLOYMENT_IMAGE_NAME")
 	err = viper.BindEnv("DryRun", "PLUGIN_DRY_RUN")
+	err = viper.BindEnv("DeploymentFileRepositoryPath", "PLUGIN_DEPLOYMENT_FILE_REPOSITORY_PATH")
+	err = viper.BindEnv("CommitDeployment", "PLUGIN_COMMIT_DEPLOYMENT")
+	err = viper.BindEnv("BuildEvent", "DRONE_BUILD_EVENT")
 	if err != nil {
 		err = ErrPackageInitialisation{Reasons: []string{
 			"binding viper keys to environment variables",
@@ -26,17 +29,24 @@ func init() {
 }
 
 type Config struct {
-	DeploymentRepositoryPath     string    `validate:"required"`
-	KubernetesDeploymentFilePath string    `validate:"required"`
-	KubernetesServer             string    `validate:"required"`
-	KubernetesCertData           string    `validate:"required"`
-	KubernetesClientCertData     string    `validate:"required"`
-	KubernetesClientKeyData      string    `validate:"required"`
-	BuildEvent                   git.Event `validate:"required"`
+	KubernetesServer             string `validate:"required"`
+	KubernetesCertData           string `validate:"required"`
+	KubernetesClientCertData     string `validate:"required"`
+	KubernetesClientKeyData      string `validate:"required"`
+	DeploymentFilePath           string `validate:"required"`
+	DeploymentTagRepositoryPath  string
+	DeploymentImageName          string
 	DryRun                       bool
+	DeploymentFileRepositoryPath string
+	CommitDeployment             bool
+	BuildEvent                   git.Event `validate:"required"`
 }
 
 func GetConfig() (*Config, error) {
+	// set default configuration
+	viper.SetDefault("DeploymentTagRepositoryPath", "/drone/src")
+	viper.SetDefault("DryRun", false)
+
 	// parse the config from environment
 	conf := new(Config)
 	if err := viper.Unmarshal(&conf); err != nil {

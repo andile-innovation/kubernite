@@ -49,7 +49,7 @@ See [drone secrets](https://readme.drone.io/configure/secrets/).
 |deployment_tag_repository_path|[**optional** - default is **/drone/src**] Path to root of repository from which tag/commit information is drawn to update the kubernetes.io/change-cause annotations in the deployment file. Defaults to default drone working directory (i.e. /drone/src) which is typically the root of the repository which has triggered the deployment.|
 |deployment_image_name|[**optional** if pod template contains only 1 image, **required** if pod template contains more than 1 image] The name of the image whose tag should be updated.|
 |dry_run|[**optional** - default is **false**] If set, no deployment takes place and the updated deployment file which would be applied to the cluster is printed out in json format.|
-|deployment_file_repository_path|[**optional** - no default] Path to root of repository to which deployment file with updated kubernetes.io/change-cause annotations will be committed and pushed if settings.commit_deployment is set.|
+|deployment_file_repository_path|[**optional** only if commit_deployment is set to **false** - no default] Path to root of repository to which deployment file with updated kubernetes.io/change-cause annotations will be committed and pushed if settings.commit_deployment is set.|
 |commit_deployment|[**optional** - default is **false**] If set, deployment file with updated kubernetes.io/change-cause annotations will be committed and pushed to repository with it's root at settings.deployment_file_repository_path.|
 ## Working Principle
 A redeployment of an existing deployment is triggered when the pod template part of the deployment's .spec section is changed and the associated resource is updated.
@@ -74,15 +74,16 @@ name: default
 
 # [1.] specify work space structure
 # results in the following:
-# ├── projects
+# ├── repositories
 #       └── foo <-- drone clones repository here, this is default working directory
 workspace:
-  base: /projects
+  base: /repositories
   path: foo
 
-# [2.] volume to share files between steps
+# [2.] volume to share files between steps. this is necessary as by default only files in the 
+# base of the workspace are maintained between steps (i.e. /repositories/foo).
 volumes:
-  - name: shared_volume
+  - name: infrastructure_volume
     temp: {}
 
 steps:
@@ -114,7 +115,7 @@ steps:
   - name: clone infrastucture
     image: docker:git
     volumes:
-      - name: shard_volume
+      - name: infrastructure_volume
         path: /projects/infrastructure
     commands:
       - cd /projects
@@ -123,6 +124,9 @@ steps:
   # [6.] this stage will run only with tag events 
   - name: deploy on tag
     image: tbcloud/kubernite:<version>
+    volumes:
+      - name: infrastructure_volume
+        path: /projects/infrastructure
     settings:
         kubernetes_server:
           from_secret: kubernetes_server
@@ -142,6 +146,9 @@ steps:
   # [7.] this stage will run only with tag events
   - name: deploy on other
     image: tbcloud/kubernite:<version>
+    volumes:
+      - name: infrastructure_volume
+        path: /projects/infrastructure
     settings:
         kubernetes_server:
           from_secret: kubernetes_server

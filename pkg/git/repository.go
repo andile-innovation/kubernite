@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 type Event string
@@ -24,16 +25,16 @@ type Repository struct {
 
 func NewRepositoryFromFilePath(pathToRepository string) (*Repository, error) {
 	// validate given repository path
+	if pathToRepository == "" {
+		return nil, ErrOpeningRepository{Reasons: []string{
+			"given path to repository is blank",
+		}}
+	}
 	pathToRepository, err := filepath.Abs(pathToRepository)
 	if err != nil {
 		return nil, ErrOpeningRepository{Reasons: []string{
 			"getting absolute path",
 			err.Error(),
-		}}
-	}
-	if pathToRepository == "" {
-		return nil, ErrOpeningRepository{Reasons: []string{
-			"given path to repository is blank",
 		}}
 	}
 	repositoryFileInfo, err := os.Stat(pathToRepository)
@@ -120,4 +121,63 @@ func (r *Repository) GetLatestCommit() (*object.Commit, error) {
 		}}
 	}
 	return commit, nil
+}
+
+func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, KubernetesDeploymentFilePath string) error {
+	// get worktree
+	w, err := r.Worktree()
+	if err != nil {
+		return ErrGeneratingWorkTree{
+			Reasons: []string{
+				"getting git deployment repo worktree",
+				err.Error(),
+			},
+		}
+	}
+
+	fileRelToRepo, err := filepath.Rel(DeploymentFileRepositoryPath, KubernetesDeploymentFilePath)
+	if err != nil {
+		return ErrGeneratingRelFilePath{
+			Reasons: []string{
+				"generating deployment file path relative to deployment file repository path",
+				err.Error(),
+			},
+		}
+	}
+
+	// git add deploymentFile
+	if _, err := w.Add(fileRelToRepo); err != nil {
+		return ErrGitAdd{
+			Reasons: []string{
+				"git add deployment",
+				err.Error(),
+			},
+		}
+	}
+
+	// git commit kubernite deployment
+	if _, err := w.Commit("Kubernite deployment", &goGit.CommitOptions{
+		Author: &object.Signature{
+			Name:  "Kubernite",
+			Email: "-",
+			When:  time.Now(),
+		},
+	}); err != nil {
+		return ErrGitCommit{Reasons: []string{
+			"git commit deployment",
+			err.Error(),
+		}}
+	}
+
+	// git push kubernite deployment
+	if err := r.Push(&goGit.PushOptions{}); err != nil {
+		return ErrGitPush{
+			Reasons: []string{
+				"git push deployment",
+				err.Error(),
+			},
+		}
+	}
+
+	return nil
 }

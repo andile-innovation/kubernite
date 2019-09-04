@@ -93,6 +93,42 @@ func (d *Deployment) UpdatePodTemplateAnnotations(key, value string) error {
 	return nil
 }
 
+func (d *Deployment) UpdateImageTag(deploymentImageName, latestTag string) error {
+	// validation
+	if len(d.Spec.Template.Spec.Containers) == 0 {
+		return ErrDeploymentManifestInvalid{
+			Reasons: []string{
+				"no images in pod spec",
+			},
+		}
+	}
+
+	if len(d.Spec.Template.Spec.Containers) == 1 {
+		containerImage := d.Spec.Template.Spec.Containers[0].Image
+		if deploymentImageName == "" {
+			deploymentImageName = containerImage[:strings.IndexByte(containerImage, ':')]
+		} else {
+			if deploymentImageName != containerImage[:strings.IndexByte(containerImage, ':')] {
+				return ErrSuppliedImageNameNotInConfigFile{}
+			}
+		}
+		d.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s",deploymentImageName,latestTag)
+		return nil
+	}
+
+	if deploymentImageName == "" {
+		return ErrImageNotSpecified{}
+	}
+
+	for i, c := range d.Spec.Template.Spec.Containers {
+		if c.Image[:strings.IndexByte(c.Image, ':')] == deploymentImageName {
+			d.Spec.Template.Spec.Containers[i].Image = fmt.Sprintf("%s:%s",deploymentImageName,latestTag)
+			return nil
+		}
+	}
+	return ErrSuppliedImageNameNotInConfigFile{}
+}
+
 /*
 WriteToYAML writes the manifest file to disk at it's original filepath
 */
