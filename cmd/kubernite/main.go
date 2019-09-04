@@ -17,21 +17,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// TODO remove these
-	log.Info("====")
-	log.Info(kuberniteConf.KubernetesServer)
-	log.Info(kuberniteConf.KubernetesCertData)
-	log.Info(kuberniteConf.KubernetesClientCertData)
-	log.Info(kuberniteConf.KubernetesClientKeyData)
-	log.Info(kuberniteConf.KubernetesDeploymentFilePath)
-	log.Info(kuberniteConf.DeploymentTagRepositoryPath)
-	log.Info(kuberniteConf.DeploymentImageName)
-	log.Info(kuberniteConf.DryRun)
-	log.Info(kuberniteConf.DeploymentFileRepositoryPath)
-	log.Info(kuberniteConf.CommitDeployment)
-	log.Info(kuberniteConf.BuildEvent)
-	log.Info("====")
-
 	// handle build event
 	deploymentFile, err := handleDeployment(kuberniteConf)
 	if err != nil {
@@ -59,7 +44,7 @@ func main() {
 	}
 
 	// write file
-	if err := deploymentFile.WriteToYAMLAtPath("output.yaml"); err != nil {
+	if err := deploymentFile.WriteToYAMLAtPath(kuberniteConf.KubernetesDeploymentFilePath); err != nil {
 		log.Fatal(err)
 	}
 
@@ -76,7 +61,7 @@ func commitDeployment(kuberniteConf *kuberniteConfig.Config) error {
 	if err != nil {
 		return err
 	}
-	err = gitRepo.CommitDeployment(kuberniteConf.KubernetesDeploymentFilePath)
+	err = gitRepo.CommitDeployment(kuberniteConf.DeploymentFileRepositoryPath, kuberniteConf.KubernetesDeploymentFilePath)
 	if err != nil {
 		return err
 	}

@@ -123,14 +123,16 @@ func (r *Repository) GetLatestCommit() (*object.Commit, error) {
 	return commit, nil
 }
 
-func (r *Repository) CommitDeployment(pathToDeploymentFile string) error {
+func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, KubernetesDeploymentFilePath string) error {
 	// get worktree
 	w, err := r.Worktree()
 	if err != nil {
 		return ErrGeneratingWorkTree{}
 	}
+
+	fileRelToRepo, err := filepath.Rel(DeploymentFileRepositoryPath,KubernetesDeploymentFilePath )
 	// git add deploymentFile
-	_, err = w.Add(pathToDeploymentFile)
+	_, err = w.Add(fileRelToRepo)
 	if err != nil {
 		return ErrGitAdd{}
 	}
@@ -147,17 +149,18 @@ func (r *Repository) CommitDeployment(pathToDeploymentFile string) error {
 		return ErrGitCommit{}
 	}
 
-	err = r.Push(&goGit.PushOptions{
-		RemoteName: "",
-		RefSpecs:   nil,
-		Auth:       nil,
-		Progress:   nil,
-		Prune:      false,
-	})
-
-	if err != nil {
-		return ErrGitPush{}
-	}
+	//TODO , it look like the previous step already pushes
+	//err = r.Push(&goGit.PushOptions{
+	//	RemoteName: "",
+	//	RefSpecs:   nil,
+	//	Auth:       nil,
+	//	Progress:   nil,
+	//	Prune:      false,
+	//})
+	//
+	//if err != nil {
+	//	return ErrGitPush{}
+	//}
 
 	return nil
 }
