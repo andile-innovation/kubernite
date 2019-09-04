@@ -149,18 +149,11 @@ func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, KubernetesDe
 		return ErrGitCommit{}
 	}
 
-	//TODO , it look like the previous step already pushes
-	//err = r.Push(&goGit.PushOptions{
-	//	RemoteName: "",
-	//	RefSpecs:   nil,
-	//	Auth:       nil,
-	//	Progress:   nil,
-	//	Prune:      false,
-	//})
-	//
-	//if err != nil {
-	//	return ErrGitPush{}
-	//}
+	err = r.Push(&goGit.PushOptions{})
+
+	if err != nil {
+		return ErrGitPush{}
+	}
 
 	return nil
 }
