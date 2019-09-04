@@ -94,6 +94,15 @@ func (d *Deployment) UpdatePodTemplateAnnotations(key, value string) error {
 }
 
 func (d *Deployment) UpdateImageTag(deploymentImageName, latestTag string) error {
+	// validation
+	if len(d.Spec.Template.Spec.Containers) == 0 {
+		return ErrDeploymentManifestInvalid{
+			Reasons: []string{
+				"no images in pod spec",
+			},
+		}
+	}
+
 	if len(d.Spec.Template.Spec.Containers) == 1 {
 		containerImage := d.Spec.Template.Spec.Containers[0].Image
 		if deploymentImageName == "" {

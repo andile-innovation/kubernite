@@ -40,4 +40,4 @@ RUN apk add --no-cache git openssh curl perl
 # Finally we copy the statically compiled Go binary.
 COPY --from=kubernite_builder /kubernite/kubernite /kubernite
 
-#ENTRYPOINT ["/kubernite"]
+ENTRYPOINT ["/kubernite"]

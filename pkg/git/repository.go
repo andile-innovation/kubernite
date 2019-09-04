@@ -127,32 +127,56 @@ func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, KubernetesDe
 	// get worktree
 	w, err := r.Worktree()
 	if err != nil {
-		return ErrGeneratingWorkTree{}
+		return ErrGeneratingWorkTree{
+			Reasons: []string{
+				"getting git deployment repo worktree",
+				err.Error(),
+			},
+		}
 	}
 
-	fileRelToRepo, err := filepath.Rel(DeploymentFileRepositoryPath,KubernetesDeploymentFilePath )
-	// git add deploymentFile
-	_, err = w.Add(fileRelToRepo)
+	fileRelToRepo, err := filepath.Rel(DeploymentFileRepositoryPath, KubernetesDeploymentFilePath)
 	if err != nil {
-		return ErrGitAdd{}
+		return ErrGeneratingRelFilePath{
+			Reasons: []string{
+				"generating deployment file path relative to deployment file repository path",
+				err.Error(),
+			},
+		}
 	}
 
-	_, err = w.Commit("Kubernite deployment", &goGit.CommitOptions{
+	// git add deploymentFile
+	if _, err := w.Add(fileRelToRepo); err != nil {
+		return ErrGitAdd{
+			Reasons: []string{
+				"git add deployment",
+				err.Error(),
+			},
+		}
+	}
+
+	// git commit kubernite deployment
+	if _, err := w.Commit("Kubernite deployment", &goGit.CommitOptions{
 		Author: &object.Signature{
 			Name:  "Kubernite",
 			Email: "-",
 			When:  time.Now(),
 		},
-	})
-
-	if err != nil {
-		return ErrGitCommit{}
+	}); err != nil {
+		return ErrGitCommit{Reasons: []string{
+			"git commit deployment",
+			err.Error(),
+		}}
 	}
 
-	err = r.Push(&goGit.PushOptions{})
-
-	if err != nil {
-		return ErrGitPush{}
+	// git push kubernite deployment
+	if err := r.Push(&goGit.PushOptions{}); err != nil {
+		return ErrGitPush{
+			Reasons: []string{
+				"git push deployment",
+				err.Error(),
+			},
+		}
 	}
 
 	return nil
