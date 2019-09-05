@@ -2,10 +2,11 @@ package git
 
 import (
 	"fmt"
+	"golang.org/x/crypto/ssh"
 	goGit "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
+	gitssh "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 	"io"
 	"os"
 	"path/filepath"
@@ -124,7 +125,7 @@ func (r *Repository) GetLatestCommit() (*object.Commit, error) {
 	return commit, nil
 }
 
-func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, DeploymentFilePath, GitUsername, GitPassword string) error {
+func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, DeploymentFilePath, GitUsername, GitPassword, GitKey string) error {
 	// get worktree
 	w, err := r.Worktree()
 	if err != nil {
@@ -170,16 +171,16 @@ func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, DeploymentFi
 		}}
 	}
 
+	signer, err := ssh.ParsePrivateKey([]byte(GitKey))
+	auth := &gitssh.PublicKeys{User: "git", Signer: signer}
+
 	// git push kubernite deployment
 	if err := r.Push(&goGit.PushOptions{
 		RemoteName: "origin",
 		RefSpecs:   nil,
-		Auth: &http.BasicAuth{
-			Password: GitPassword,
-			Username: GitUsername,
-		},
-		Progress: nil,
-		Prune:    false,
+		Auth:       auth,
+		Progress:   nil,
+		Prune:      false,
 	}); err != nil {
 		return ErrGitPush{
 			Reasons: []string{

@@ -8,6 +8,7 @@ require (
 	github.com/leodido/go-urn v1.1.0 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/viper v1.4.0
+	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.29.1
 	gopkg.in/src-d/go-git.v4 v4.13.1
