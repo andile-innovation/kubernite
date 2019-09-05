@@ -5,6 +5,7 @@ import (
 	goGit "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 	"io"
 	"os"
 	"path/filepath"
@@ -173,7 +174,10 @@ func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, DeploymentFi
 	if err := r.Push(&goGit.PushOptions{
 		RemoteName: "origin",
 		RefSpecs:   nil,
-		Auth: nil,
+		Auth: &http.BasicAuth{
+			Password: GitPassword,
+			Username: GitUsername,
+		},
 		Progress: nil,
 		Prune:    false,
 	}); err != nil {
