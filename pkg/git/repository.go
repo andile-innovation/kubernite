@@ -2,11 +2,9 @@ package git
 
 import (
 	"fmt"
-	"golang.org/x/crypto/ssh"
 	goGit "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
-	gitssh "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 	"io"
 	"os"
 	"path/filepath"
@@ -171,24 +169,25 @@ func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, DeploymentFi
 		}}
 	}
 
-	signer, err := ssh.ParsePrivateKey([]byte(GitKey))
-	auth := &gitssh.PublicKeys{User: "git", Signer: signer}
-
-	// git push kubernite deployment
-	if err := r.Push(&goGit.PushOptions{
-		RemoteName: "origin",
-		RefSpecs:   nil,
-		Auth:       auth,
-		Progress:   nil,
-		Prune:      false,
-	}); err != nil {
-		return ErrGitPush{
-			Reasons: []string{
-				"git push deployment",
-				err.Error(),
-			},
-		}
-	}
+	//TODO
+	//signer, err := ssh.ParsePrivateKey([]byte(GitKey))
+	//auth := &gitssh.PublicKeys{User: "git", Signer: signer}
+	//
+	//// git push kubernite deployment
+	//if err := r.Push(&goGit.PushOptions{
+	//	RemoteName: "origin",
+	//	RefSpecs:   nil,
+	//	Auth:       auth,
+	//	Progress:   nil,
+	//	Prune:      false,
+	//}); err != nil {
+	//	return ErrGitPush{
+	//		Reasons: []string{
+	//			"git push deployment",
+	//			err.Error(),
+	//		},
+	//	}
+	//}
 
 	return nil
 }
