@@ -5,7 +5,6 @@ import (
 	goGit "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
-	//gitssh "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 	"io"
 	"os"
 	"path/filepath"
@@ -124,7 +123,14 @@ func (r *Repository) GetLatestCommit() (*object.Commit, error) {
 	return commit, nil
 }
 
-func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, DeploymentFilePath, GitUsername, GitPassword, GitKey string) error {
+func (r *Repository) CommitDeployment(
+	DeploymentFileRepositoryPath,
+	DeploymentFilePath string,
+	//TODO - used for git push
+	//GitUsername,
+	//GitPassword,
+	//GitKey string,
+	) error {
 	// get worktree
 	w, err := r.Worktree()
 	if err != nil {
@@ -170,6 +176,7 @@ func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, DeploymentFi
 		}}
 	}
 
+	// TODO - implement git push
 	//signer, err := ssh.ParsePrivateKey([]byte(GitKey))
 	//auth := &gitssh.PublicKeys{User: "git", Signer: signer}
 	//
