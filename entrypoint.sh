@@ -1,3 +1,3 @@
 #!/bin/ash
 /kubernite
-push --set-upstream origin master
+git push --set-upstream origin master
