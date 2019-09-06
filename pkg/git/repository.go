@@ -169,25 +169,24 @@ func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, DeploymentFi
 		}}
 	}
 
-	//TODO
 	//signer, err := ssh.ParsePrivateKey([]byte(GitKey))
 	//auth := &gitssh.PublicKeys{User: "git", Signer: signer}
-	//
-	//// git push kubernite deployment
-	//if err := r.Push(&goGit.PushOptions{
-	//	RemoteName: "origin",
-	//	RefSpecs:   nil,
-	//	Auth:       auth,
-	//	Progress:   nil,
-	//	Prune:      false,
-	//}); err != nil {
-	//	return ErrGitPush{
-	//		Reasons: []string{
-	//			"git push deployment",
-	//			err.Error(),
-	//		},
-	//	}
-	//}
+
+	// git push kubernite deployment
+	if err := r.Push(&goGit.PushOptions{
+		RemoteName: "origin",
+		RefSpecs:   nil,
+		Auth:       nil,
+		Progress:   nil,
+		Prune:      false,
+	}); err != nil {
+		return ErrGitPush{
+			Reasons: []string{
+				"git push deployment",
+				err.Error(),
+			},
+		}
+	}
 
 	return nil
 }

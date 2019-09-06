@@ -13,5 +13,9 @@ steps:
         from_secret: docker_password
 
 trigger:
+  branch:
+    - master
   event:
-    - tag
+    - push
+
+#push TODO
