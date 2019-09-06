@@ -1,11 +1,32 @@
 # Kubernite
 ![kubernite](https://github.com/andile-innovation/kubernite/blob/master/images/kubernite.png?raw=true)
 
-![warning](https://github.com/andile-innovation/kubernite/blob/master/images/warning.png?raw=true)
-
 [![Build Status](https://cloud.drone.io/api/badges/andile-innovation/kubernite/status.svg)](https://cloud.drone.io/andile-innovation/kubernite)
 
 Kubernite is a [Drone](https://drone.io/) Plugin for Kubernetes written in golang using the official [client-go](https://github.com/kubernetes/client-go) kubernetes api client library.
+
+##Warning
+![warning](https://github.com/andile-innovation/kubernite/blob/master/images/warningSign.png?raw=true)
+
+The updated deployment manifest file is not yet pushed to source control. The following extra drone step needs to be added 
+to get around this. 
+
+```yaml
+  - name: push infrastucture
+    image: alpine
+    volumes:
+      - name: infrastructure_volume
+        path: /projects/infrastructure
+    commands:
+      - apk add --no-cache git
+      - cd /projects/infrastructure
+      - git push
+    when:
+      event:
+        exclude:
+          - pull_request
+```
+
 ## Motivation
 Kubernite was built out of a desire to achieve complete automation of the deployment stage of the development cycle of an application running in a kubernetes cluster.
 
