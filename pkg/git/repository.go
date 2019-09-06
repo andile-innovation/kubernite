@@ -2,13 +2,9 @@ package git
 
 import (
 	"fmt"
-	"github.com/appleboy/drone-git-push/repo"
-	"github.com/pkg/errors"
 	goGit "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
-	"strings"
-
 	//gitssh "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 	"io"
 	"os"
@@ -173,35 +169,6 @@ func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, DeploymentFi
 			err.Error(),
 		}}
 	}
-
-	if err := repo.WriteNetrc("github.com", GitUsername, GitPassword); err != nil {
-		return errors.Wrap(err, "failed to write netrc")
-	}
-
-
-	if err := repo.WriteKey(GitKey); err != nil {
-		return errors.Wrap(err, "failed to write sshkey")
-	}
-
-	cmd := repo.RemotePush(
-		"origin",
-		"master",
-		false,
-		false,
-	)
-
-	cmd.Dir = DeploymentFileRepositoryPath
-	if cmd.Stdout == nil {
-		cmd.Stdout = os.Stdout
-	}
-
-	if cmd.Stderr == nil {
-		cmd.Stderr = os.Stderr
-	}
-
-	fmt.Fprintf(os.Stdout, "+ %s\n", strings.Join(cmd.Args, " "))
-	return cmd.Run()
-
 
 	//signer, err := ssh.ParsePrivateKey([]byte(GitKey))
 	//auth := &gitssh.PublicKeys{User: "git", Signer: signer}

@@ -40,4 +40,5 @@ RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 # Finally we copy the statically compiled Go binary.
 COPY --from=kubernite_builder /kubernite/kubernite /kubernite
 
-ENTRYPOINT ["/kubernite"]
+CMD ["/kubernite"]
+CMD ["git push"]
