@@ -172,7 +172,7 @@ func (r *Repository) CommitDeployment(DeploymentFileRepositoryPath, DeploymentFi
 	}
 
 	signer, err := ssh.ParsePrivateKey([]byte(GitKey))
-	auth := &gitssh.PublicKeys{User: "LawrenceMarsman", Signer: signer}
+	auth := &gitssh.PublicKeys{User: "git", Signer: signer}
 
 	// git push kubernite deployment
 	if err := r.Push(&goGit.PushOptions{
